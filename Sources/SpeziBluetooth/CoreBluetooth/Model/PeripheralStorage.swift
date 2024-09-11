@@ -8,6 +8,7 @@
 
 import Atomics
 import Foundation
+import SpeziFoundation
 
 
 /// A dedicated, observable storage container for a ``BluetoothPeripheral``.

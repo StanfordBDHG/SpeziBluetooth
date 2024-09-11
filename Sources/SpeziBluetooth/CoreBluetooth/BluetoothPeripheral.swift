@@ -197,7 +197,7 @@ public class BluetoothPeripheral { // swiftlint:disable:this type_body_length
             }
         } onCancel: {
             Task { @SpeziBluetooth in
-                if connectAccess.isRunning {
+                if connectAccess.ongoingAccess {
                     disconnect()
                 }
             }

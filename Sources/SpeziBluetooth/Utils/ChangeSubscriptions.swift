@@ -8,6 +8,7 @@
 
 import Foundation
 import OrderedCollections
+import SpeziFoundation
 
 
 final class ChangeSubscriptions<Value: Sendable>: Sendable {

@@ -231,7 +231,7 @@ import Spezi
 /// - ``powerOn()``
 /// - ``powerOff()``
 @SpeziBluetooth
-public final class Bluetooth: Module, EnvironmentAccessible, Sendable {
+public final class Bluetooth: Module, EnvironmentAccessible, @unchecked Sendable {
     @Observable
     class Storage {
         @MainActor var nearbyDevices: OrderedDictionary<UUID, any BluetoothDevice> = [:]

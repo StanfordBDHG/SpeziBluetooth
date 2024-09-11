@@ -10,6 +10,7 @@ import Atomics
 import ByteCoding
 import CoreBluetooth
 import Foundation
+import SpeziFoundation
 
 
 /// Declare a characteristic within a Bluetooth service.

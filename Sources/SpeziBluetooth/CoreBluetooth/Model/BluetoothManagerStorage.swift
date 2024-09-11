@@ -6,9 +6,10 @@
 // SPDX-License-Identifier: MIT
 //
 
-import Atomics
+import Atomics // TODO: migrate to swift 6 atomics
 import Foundation
 import OrderedCollections
+import SpeziFoundation
 
 
 @Observable
