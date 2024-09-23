@@ -37,6 +37,10 @@ public final class AccessorySetupKit: Module, DefaultInitializable, Sendable {
         state.pickerPresented
     }
 
+    public var accessories: [ASAccessory] {
+        session.accessories
+    }
+
     private var accessoryChangeSubscriptions: [UUID: AsyncStream<AccessoryChange>.Continuation] = [:]
 
     public var accessoryChanges: AsyncStream<AccessoryChange> {
