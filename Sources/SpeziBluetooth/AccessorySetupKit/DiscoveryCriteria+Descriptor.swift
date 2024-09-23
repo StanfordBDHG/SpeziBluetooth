@@ -18,27 +18,10 @@ import Spezi
 
 // TODO: support name, manufacturer data, service data etc!
 
-@available(iOS 18.0, *)
-@MainActor
-final class AccessorySetupSession: Module {
-    private let session = ASAccessorySession()
-
-    nonisolated init() {}
-
-    func configure() {
-        session.activate(on: .main) { [weak self] event in
-            guard let self else {
-                return
-            }
-            print("Handling event \(event)")
-        }
-    }
-}
-
 
 extension ManufacturerIdentifier {
     @available(iOS 18.0, *)
-    var bluetoothCompanyIdentifier: ASBluetoothCompanyIdentifier {
+    public var bluetoothCompanyIdentifier: ASBluetoothCompanyIdentifier {
         ASBluetoothCompanyIdentifier(rawValue)
     }
 }
@@ -46,8 +29,8 @@ extension ManufacturerIdentifier {
 
 extension DiscoveryCriteria {
     @available(iOS 18.0, *)
-    var discoveryDescriptor: ASDiscoveryDescriptor {
-        var descriptor = ASDiscoveryDescriptor()
+    public var discoveryDescriptor: ASDiscoveryDescriptor {
+        let descriptor = ASDiscoveryDescriptor()
 
         switch self {
         case let .advertisedServices(uuids):

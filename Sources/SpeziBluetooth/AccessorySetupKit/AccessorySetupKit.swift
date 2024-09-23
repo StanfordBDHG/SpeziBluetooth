@@ -71,8 +71,7 @@ public final class AccessorySetupKit: Module, DefaultInitializable, Sendable {
         switch event.eventType {
         case .activated:
             // TODO: retrieve the
-            session.accessories
-            break
+            _ = session.accessories
         case .invalidated:
             break // TODO: do we need to handle?
         case .migrationComplete:
