@@ -54,6 +54,7 @@ public final class AccessorySetupKit: Module, DefaultInitializable, Sendable {
     public nonisolated init() {}
 
     public func configure() {
+        // TODO: check when the activate event is getting dispatched (sync?), if so, make sure to active session on next tick for subscription reg.
         self.session.activate(on: DispatchQueue.main) { [weak self] event in
             guard let self else {
                 return
@@ -72,7 +73,7 @@ public final class AccessorySetupKit: Module, DefaultInitializable, Sendable {
     // TODO: remove + rename accessory!
 
     private func handleSessionEvent(event: ASAccessoryEvent) { // swiftlint:disable:this cyclomatic_complexity
-        logger.debug("Received AS Session event \(event.eventType.rawValue) for accessory \(event.accessory)")
+        logger.debug("Received AS Session event \(event.eventType) for accessory \(event.accessory)")
         // TODO: eventType customStringConvertible
 
         switch event.eventType {
