@@ -12,7 +12,7 @@ import Spezi
 
 @available(iOS 18.0, *)
 @MainActor
-public final class AccessorySetupKit: Module, Sendable {
+public final class AccessorySetupKit: Module, DefaultInitializable, Sendable {
     public enum AccessoryChange {
         case added(ASAccessory)
         case removed(ASAccessory)
@@ -48,6 +48,8 @@ public final class AccessorySetupKit: Module, Sendable {
             }
         }
     }
+
+    public init() {}
 
     public func configure() {
         self.session.activate(on: DispatchQueue.main) { [weak self] event in
