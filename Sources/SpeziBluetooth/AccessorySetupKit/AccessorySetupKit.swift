@@ -70,7 +70,15 @@ public final class AccessorySetupKit: Module, DefaultInitializable, Sendable {
         try await session.showPicker(for: items)
     }
 
-    // TODO: remove + rename accessory!
+    public func renameAccessory(_ accessory: ASAccessory, options renameOptions: ASAccessory.RenameOptions = []) async throws {
+        try await session.renameAccessory(accessory, options: renameOptions)
+    }
+
+    public func removeAccessory(_ accessory: ASAccessory) async throws {
+        try await session.removeAccessory(accessory)
+    }
+
+    // TODO: finish + fail authorization???
 
     private func handleSessionEvent(event: ASAccessoryEvent) { // swiftlint:disable:this cyclomatic_complexity
         logger.debug("Received AS Session event \(event.eventType) for accessory \(event.accessory)")
