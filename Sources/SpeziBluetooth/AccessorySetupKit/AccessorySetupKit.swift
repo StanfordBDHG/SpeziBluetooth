@@ -23,6 +23,8 @@ public final class AccessorySetupKit: Module, DefaultInitializable, Sendable {
     @Observable
     fileprivate final class State {
         var pickerPresented = false
+
+        nonisolated init() {}
     }
 
     @Application(\.logger)
@@ -49,7 +51,7 @@ public final class AccessorySetupKit: Module, DefaultInitializable, Sendable {
         }
     }
 
-    public init() {}
+    public nonisolated init() {}
 
     public func configure() {
         self.session.activate(on: DispatchQueue.main) { [weak self] event in
