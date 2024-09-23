@@ -16,6 +16,8 @@ import Spezi
 
 // TODO: make this part of a SpeziBluetoothAccessorySetupKitSupport?
 
+// TODO: support name, manufacturer data, service data etc!
+
 @available(iOS 18.0, *)
 @MainActor
 final class AccessorySetupSession: Module {
