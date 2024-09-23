@@ -30,7 +30,7 @@ public final class AccessorySetupKit: Module, DefaultInitializable, Sendable {
     @Application(\.logger)
     private var logger
 
-    private let session = ASAccessorySession()
+    @preconcurrency private let session = ASAccessorySession()
     private let state = State()
 
     public var pickerPresented: Bool {
@@ -63,6 +63,13 @@ public final class AccessorySetupKit: Module, DefaultInitializable, Sendable {
             }
         }
     }
+
+    public func showPicker(for items: [ASPickerDisplayItem]) async throws {
+        // TODO: what the actual hell?, build custom async wrapper, this is unusable
+        try await session.showPicker(for: items)
+    }
+
+    // TODO: remove + rename accessory!
 
     private func handleSessionEvent(event: ASAccessoryEvent) { // swiftlint:disable:this cyclomatic_complexity
         logger.debug("Received AS Session event \(event.eventType.rawValue) for accessory \(event.accessory)")
