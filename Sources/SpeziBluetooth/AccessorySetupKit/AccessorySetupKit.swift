@@ -9,13 +9,27 @@
 import AccessorySetupKit
 import Spezi
 
+// TODO: support name, manufacturer data, service data etc!
 
-@available(iOS 18.0, *)
+
+/// Enable privacy-preserving discovery and configuration of accessories through Apple's AccessorySetupKit.
+///
+/// This module enables to discover and configure Bluetooth or Wi-Fi accessories using Apple's [AccessorySetupKit](https://developer.apple.com/documentation/accessorysetupkit).
+///
+/// - Important: Make sure to follow all the setup instructions in [Declare your app's accessories](https://developer.apple.com/documentation/accessorysetupkit/discovering-and-configuring-accessories#Declare-your-apps-accessories)
+///     declaring all the necessary accessory information in your `Info.plist` file.
 @MainActor
-public final class AccessorySetupKit: Module, DefaultInitializable, Sendable {
-    public enum AccessoryChange {
+@available(iOS 18.0, *)
+public final class AccessorySetupKit { // TODO: this might support Wifi accessories?
+    /// Accessory-related events.
+    public enum AccessoryEvent {
+        /// The ``AccessorySetupKit/accessories`` property is now available.
+        case available
+        /// New accessory was successfully added.
         case added(ASAccessory)
+        /// An accessory was removed.
         case removed(ASAccessory)
+        /// An accessory was changed.
         case changed(ASAccessory)
     }
 
@@ -23,6 +37,7 @@ public final class AccessorySetupKit: Module, DefaultInitializable, Sendable {
     @Observable
     fileprivate final class State {
         var pickerPresented = false
+        let accessories: Void = ()
 
         nonisolated init() {}
     }
@@ -33,17 +48,21 @@ public final class AccessorySetupKit: Module, DefaultInitializable, Sendable {
     @preconcurrency private let session = ASAccessorySession()
     private let state = State()
 
+    /// Determine if the accessory picker is currently being presented.
     public var pickerPresented: Bool {
         state.pickerPresented
     }
 
+    /// Previously selected accessories for this application.
     public var accessories: [ASAccessory] {
-        session.accessories
+        state.access(keyPath: \.accessories)
+        return session.accessories
     }
 
-    private var accessoryChangeSubscriptions: [UUID: AsyncStream<AccessoryChange>.Continuation] = [:]
-
-    public var accessoryChanges: AsyncStream<AccessoryChange> {
+    private var accessoryChangeSubscriptions: [UUID: AsyncStream<AccessoryEvent>.Continuation] = [:]
+    
+    /// Subscribe to accessory events.
+    public var accessoryChanges: AsyncStream<AccessoryEvent> {
         AsyncStream { continuation in
             let id = UUID()
             accessoryChangeSubscriptions[id] = continuation
@@ -54,11 +73,13 @@ public final class AccessorySetupKit: Module, DefaultInitializable, Sendable {
             }
         }
     }
-
+    
+    /// Initialize the accessory setup kit.
     public nonisolated init() {}
 
+    /// Configure the Module.
+    @_documentation(visibility: internal)
     public func configure() {
-        // TODO: check when the activate event is getting dispatched (sync?), if so, make sure to active session on next tick for subscription reg.
         self.session.activate(on: DispatchQueue.main) { [weak self] event in
             guard let self else {
                 return
@@ -68,60 +89,104 @@ public final class AccessorySetupKit: Module, DefaultInitializable, Sendable {
             }
         }
     }
-
+    
+    /// Discover display items in picker.
+    /// - Parameter items: The known display items to discover.
     public func showPicker(for items: [ASPickerDisplayItem]) async throws {
-        // TODO: what the actual hell?, build custom async wrapper, this is unusable
-        try await session.showPicker(for: items)
+        // session is not Sendable (explicitly marked as non-Sendable), therefore we cannot call async functions on that type.
+        // Even though they exist, we cannot call them in Swift 6(! ... Apple), and thus we need to manually create a continuation
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            session.showPicker(for: items) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
     }
-
+    
+    /// Rename accessory.
+    /// - Parameters:
+    ///   - accessory: The accessory.
+    ///   - renameOptions: The rename options.
     public func renameAccessory(_ accessory: ASAccessory, options renameOptions: ASAccessory.RenameOptions = []) async throws {
-        try await session.renameAccessory(accessory, options: renameOptions)
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            session.renameAccessory(accessory, options: renameOptions) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
     }
-
+    
+    /// Remove an accessory from the application.
+    ///
+    /// If this application is the last one to access the accessory, it will be permanently un-paired from the device.
+    /// - Parameter accessory: The accessory to remove or forget.
     public func removeAccessory(_ accessory: ASAccessory) async throws {
-        try await session.removeAccessory(accessory)
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            session.removeAccessory(accessory) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
     }
 
     // TODO: finish + fail authorization???
 
     private func handleSessionEvent(event: ASAccessoryEvent) { // swiftlint:disable:this cyclomatic_complexity
-        logger.debug("Received AS Session event \(event.eventType) for accessory \(event.accessory)")
-        // TODO: eventType customStringConvertible
+        if let accessory = event.accessory {
+            logger.debug("Received Accessory Setup session event \(event.eventType) for accessory \(accessory)")
+        } else {
+            logger.debug("Received Accessory Setup session event \(event.eventType)")
+        }
 
         switch event.eventType {
         case .activated:
-            // TODO: retrieve the
-            _ = session.accessories
+            accessoryChangeSubscriptions.values.forEach { $0.yield(.available) }
+            state.withMutation(keyPath: \.accessories) {}
         case .invalidated:
-            break // TODO: do we need to handle?
+            break
         case .migrationComplete:
-            // TODO: migration handling?
             break
         case .accessoryAdded:
             guard let accessory = event.accessory else {
                 return
             }
+            state.withMutation(keyPath: \.accessories) {}
             accessoryChangeSubscriptions.values.forEach { $0.yield(.added(accessory)) }
         case .accessoryRemoved:
             guard let accessory = event.accessory else {
                 return
             }
+            state.withMutation(keyPath: \.accessories) {}
             accessoryChangeSubscriptions.values.forEach { $0.yield(.removed(accessory)) }
         case .accessoryChanged:
             guard let accessory = event.accessory else {
                 return
             }
+            state.withMutation(keyPath: \.accessories) {}
             accessoryChangeSubscriptions.values.forEach { $0.yield(.changed(accessory)) }
         case .pickerDidPresent:
             state.pickerPresented = true
         case .pickerDidDismiss:
             state.pickerPresented = false
         case .pickerSetupBridging, .pickerSetupFailed, .pickerSetupPairing, .pickerSetupRename:
-            break // TODO: any useful?
+            break // TODO: show picker setup state?
         case .unknown:
             break
         @unknown default:
-            break // TODO: asdf
+            logger.warning("The Accessory Setup session is unknown: \(event.eventType)")
         }
     }
 }
+
+
+@available(iOS 18.0, *)
+extension AccessorySetupKit: Module, DefaultInitializable, Sendable {}

@@ -678,12 +678,14 @@ extension BluetoothManager {
 
                 logger.debug("Discovered peripheral \(peripheral.debugIdentifier) at \(rssi.intValue) dB with data \(data)")
 
-                let descriptor = session.configuredDevices.find(for: data, logger: logger)
+                guard let descriptor = session.configuredDevices.find(name: peripheral.name, advertisementData: data, logger: logger) else {
+                    return // we searched for the serviceId, but other aspects do not match
+                }
 
                 let device = BluetoothPeripheral(
                     manager: manager,
                     peripheral: peripheral.cbObject,
-                    configuration: descriptor?.device ?? DeviceDescription(),
+                    configuration: descriptor.device,
                     advertisementData: data,
                     rssi: rssi.intValue
                 )

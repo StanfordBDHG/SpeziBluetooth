@@ -390,7 +390,8 @@ public final class Bluetooth: Module, EnvironmentAccessible, @unchecked Sendable
                 device = persistedDevice
             } else {
                 let advertisementData = entry.value.advertisementData
-                guard let configuration = configuration.find(for: advertisementData, logger: logger) else {
+                let name = entry.value.name
+                guard let configuration = configuration.find(name: name, advertisementData: advertisementData, logger: logger) else {
                     logger.warning("Ignoring peripheral \(entry.value) that cannot be mapped to a device class.")
                     return
                 }
