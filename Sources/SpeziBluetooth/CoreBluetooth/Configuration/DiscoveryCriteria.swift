@@ -6,20 +6,40 @@
 // SPDX-License-Identifier: MIT
 //
 
+import AccessorySetupKit
+
 
 /// The criteria by which we identify a discovered device.
 ///
 /// ## Topics
 ///
-/// ### Criteria
-/// - ``advertisedService(_:)-79pid``
-/// - ``advertisedService(_:)-5o92s``
-/// - ``advertisedServices(_:)-swift.type.method``
-/// - ``advertisedServices(_:)-swift.enum.case``
+/// ### Discovery by Service Type
+/// - ``advertisedService(_:serviceData:)-7t311``
 /// - ``advertisedServices(_:_:)``
-/// - ``accessory(manufacturer:advertising:)-swift.type.method``
-/// - ``accessory(manufacturer:advertising:)-swift.enum.case``
-/// - ``accessory(manufacturer:advertising:_:)``
+///
+/// ### Discovery by Service UUID
+///
+/// - ``advertisedService(_:serviceData:)-24p74``
+/// - ``advertisedServices(_:)-2ymt0``
+/// - ``advertisedServices(_:)-1s760``
+///
+/// ### Discovery an Accessory by Service Type
+/// - ``accessory(advertising:serviceData:nameSubstring:)-4mszn``
+/// - ``accessory(advertising:serviceData:manufacturer:manufacturerData:nameSubstring:)-62fgm``
+/// - ``accessory(advertising:serviceData:nameSubstring:range:supportOptions:)-4mu66``
+/// - ``accessory(advertising:serviceData:manufacturer:manufacturerData:nameSubstring:range:supportOptions:)-4qsw9``
+///
+/// ### Discovery an Accessory by Service UUID
+///
+/// - ``accessory(advertising:serviceData:nameSubstring:)-7z8s3``
+/// - ``accessory(advertising:serviceData:manufacturer:manufacturerData:nameSubstring:)-92fkd``
+/// - ``accessory(advertising:serviceData:nameSubstring:range:supportOptions:)-3nom7``
+/// - ``accessory(advertising:serviceData:manufacturer:manufacturerData:nameSubstring:range:supportOptions:)-7z8gg``
+///
+/// ### Discovery an Accessory that advertise multiple Services
+/// - ``accessory(manufacturer:manufacturerData:nameSubstring:advertising:)-97a8y``
+/// - ``accessory(manufacturer:manufacturerData:nameSubstring:advertising:)-31jl``
+/// - ``accessory(manufacturer:manufacturerData:nameSubstring:advertising:_:)``
 public struct DiscoveryCriteria {
     let aspects: [DescriptorAspect]
 
@@ -29,6 +49,14 @@ public struct DiscoveryCriteria {
                 partialResult.append(uuid)
             }
         }
+    }
+
+    init(_ aspects: [DescriptorAspect]) {
+        self.aspects = aspects
+    }
+
+    init(_ aspect: DescriptorAspect) {
+        self.aspects = [aspect]
     }
 
     func matches(name: String?, advertisementData: AdvertisementData) -> Bool {
@@ -44,35 +72,38 @@ extension DiscoveryCriteria: Sendable {}
 
 extension DiscoveryCriteria {
     /// Identity a device by their advertised service.
-    /// - Parameter uuid: The service uuid the service advertises.
-    /// - Returns: A ``DiscoveryCriteria/advertisedServices(_:)-swift.enum.case`` criteria.
+    /// - Parameters:
+    ///   - uuid: The service uuid the service advertises.
+    ///   - serviceData: The optional data descriptor for the service data that the device has to advertise.
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     public static func advertisedService(_ uuid: BTUUID, serviceData: DataDescriptor? = nil) -> DiscoveryCriteria {
-        DiscoveryCriteria(aspects: [.service(uuid: uuid, serviceData: serviceData)])
+        DiscoveryCriteria(.service(uuid: uuid, serviceData: serviceData))
     }
     
     /// Identify a device by their advertised services.
     ///
     /// All supplied services need to be present in the advertisement.
-    /// - Parameter uuid: The service uuids the service advertises.
-    /// - Returns: A ``DiscoveryCriteria/advertisedServices(_:)-swift.enum.case`` criteria.
+    /// - Parameter uuids: The service uuids the service advertises.
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     public static func advertisedServices(_ uuids: [BTUUID]) -> DiscoveryCriteria {
-        DiscoveryCriteria(aspects: uuids.map { uuid in
-            .service(uuid: uuid)
-        }.reversed())
+        // we reverse the internal representation to make sure that the first uuid is used with the ASDiscoveryDescriptor
+        DiscoveryCriteria(uuids.map { .service(uuid: $0) }.reversed())
     }
 
     /// Identity a device by their advertised service.
     ///
     /// All supplied services need to be present in the advertisement.
     /// - Parameter uuid: The service uuids the service advertises.
-    /// - Returns: A ``DiscoveryCriteria/advertisedServices(_:)-swift.enum.case`` criteria.
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     public static func advertisedServices(_ uuid: BTUUID...) -> DiscoveryCriteria {
         .advertisedServices(uuid)
     }
 
     /// Identify a device by their advertised service.
-    /// - Parameter service: The service type.
-    /// - Returns: A ``DiscoveryCriteria/advertisedServices(_:)-swift.enum.case`` criteria.
+    /// - Parameters:
+    ///   - service: The service type.
+    ///   - serviceData: The optional data descriptor for the service data that the device has to advertise.
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     public static func advertisedService<Service: BluetoothService>(
         _ service: Service.Type,
         serviceData: DataDescriptor? = nil
@@ -86,7 +117,7 @@ extension DiscoveryCriteria {
     /// - Parameters:
     ///   - service: The service type.
     ///   - additionalService: An optional parameter pack argument to supply additional service types the accessory is expected to advertise.
-    /// - Returns: A ``DiscoveryCriteria/advertisedServices(_:)-swift.enum.case`` criteria.
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     public static func advertisedServices<Service: BluetoothService, each S: BluetoothService>(
         _ service: Service.Type,
         _ additionalService: repeat (each S).Type
@@ -99,56 +130,233 @@ extension DiscoveryCriteria {
 }
 
 
-import AccessorySetupKit // TODO: update
 extension DiscoveryCriteria {
-    @available(iOS 18, *)
+    private static func accessory(
+        uuid: BTUUID,
+        serviceData: DataDescriptor? = nil,
+        manufacturer: ManufacturerIdentifier? = nil,
+        manufacturerData: DataDescriptor? = nil,
+        nameSubstring: String? = nil,
+        range: Int? = nil,
+        supportOptions: UInt? = nil
+    ) -> DiscoveryCriteria {
+        var aspects: [DescriptorAspect] = [
+            .service(uuid: uuid, serviceData: serviceData)
+        ]
+
+        if let manufacturer {
+            aspects.append(.manufacturer(id: manufacturer, manufacturerData: manufacturerData))
+        }
+
+        if let nameSubstring {
+            aspects.append(.nameSubstring(nameSubstring))
+        }
+
+        if let range {
+            aspects.append(.bluetoothRange(range))
+        }
+
+        if let supportOptions {
+            aspects.append(.supportOptions(supportOptions))
+        }
+
+        return DiscoveryCriteria(aspects)
+    }
+    
+    /// Identify an accessory by its service, manufacturer and name.
+    /// - Parameters:
+    ///   - uuid: The service uuid that the accessory advertises.
+    ///   - serviceData: An optional data descriptor that matches against the service data advertised for the given service uuid.
+    ///   - manufacturer: The manufacturer identifier the accessory has to advertise.
+    ///   - manufacturerData: An optional data descriptor that matches against the rest of the manufacturer data.
+    ///   - nameSubstring: Require a given string to be present in the accessory name.
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
+    public static func accessory( // swiftlint:disable:this function_default_parameter_at_end
+        advertising uuid: BTUUID,
+        serviceData: DataDescriptor? = nil,
+        manufacturer: ManufacturerIdentifier,
+        manufacturerData: DataDescriptor? = nil,
+        nameSubstring: String? = nil
+    ) -> DiscoveryCriteria {
+        .accessory(
+            uuid: uuid,
+            serviceData: serviceData,
+            manufacturer: manufacturer,
+            manufacturerData: manufacturerData,
+            nameSubstring: nameSubstring
+        )
+    }
+    
+    /// Identify an accessory by its service and name.
+    /// - Parameters:
+    ///   - uuid: The service uuid that the accessory advertises.
+    ///   - serviceData: An optional data descriptor that matches against the service data advertised for the given service uuid.
+    ///   - nameSubstring: Require a given string to be present in the accessory name.
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     public static func accessory(
-        advertising uuid: BTUUID, // TODO: typed specification!
+        advertising uuid: BTUUID,
+        serviceData: DataDescriptor? = nil,
+        nameSubstring: String? = nil
+    ) -> DiscoveryCriteria {
+        .accessory(
+            uuid: uuid,
+            serviceData: serviceData,
+            nameSubstring: nameSubstring
+        )
+    }
+    
+    /// Identify an accessory by its service, manufacturer and name.
+    /// - Parameters:
+    ///   - service: The service type that the accessory advertises.
+    ///   - serviceData: An optional data descriptor that matches against the service data advertised for the given service uuid.
+    ///   - manufacturer: The manufacturer identifier the accessory has to advertise.
+    ///   - manufacturerData: An optional data descriptor that matches against the rest of the manufacturer data.
+    ///   - nameSubstring: Require a given string to be present in the accessory name.
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
+    public static func accessory<Service: BluetoothService>( // swiftlint:disable:this function_default_parameter_at_end
+        advertising service: Service.Type,
+        serviceData: DataDescriptor? = nil,
+        manufacturer: ManufacturerIdentifier,
+        manufacturerData: DataDescriptor? = nil,
+        nameSubstring: String? = nil
+    ) -> DiscoveryCriteria {
+        .accessory(
+            uuid: service.id,
+            serviceData: serviceData,
+            manufacturer: manufacturer,
+            manufacturerData: manufacturerData,
+            nameSubstring: nameSubstring
+        )
+    }
+
+    /// Identify an accessory by its service and name.
+    /// - Parameters:
+    ///   - service: The service type that the accessory advertises.
+    ///   - serviceData: An optional data descriptor that matches against the service data advertised for the given service uuid.
+    ///   - nameSubstring: Require a given string to be present in the accessory name.
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
+    public static func accessory<Service: BluetoothService>(
+        advertising service: Service.Type,
+        serviceData: DataDescriptor? = nil,
+        nameSubstring: String? = nil
+    ) -> DiscoveryCriteria {
+        .accessory(
+            uuid: service.id,
+            serviceData: serviceData,
+            nameSubstring: nameSubstring
+        )
+    }
+
+    /// Identify an accessory by its service, manufacturer and name with additional options for the AccessorySetupKit.
+    /// - Parameters:
+    ///   - uuid: The service uuid that the accessory advertises.
+    ///   - serviceData: An optional data descriptor that matches against the service data advertised for the given service uuid.
+    ///   - manufacturer: The manufacturer identifier the accessory has to advertise.
+    ///   - manufacturerData: An optional data descriptor that matches against the rest of the manufacturer data.
+    ///   - nameSubstring: Require a given string to be present in the accessory name.
+    ///   - range: A discovery range that is used with the AccessorySetupKit.
+    ///   - supportOptions: Additional accessory support options which are used with the AccessorySetupKit.
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
+    @available(iOS 18, *)
+    public static func accessory( // swiftlint:disable:this function_default_parameter_at_end
+        advertising uuid: BTUUID,
         serviceData: DataDescriptor? = nil,
         manufacturer: ManufacturerIdentifier,
         manufacturerData: DataDescriptor? = nil,
         nameSubstring: String? = nil,
         range: ASDiscoveryDescriptor.Range = .default,
-        supportOptions: ASAccessory.SupportOptions = [] // TODO: non-iOs 18 variants without these two!
+        supportOptions: ASAccessory.SupportOptions = []
     ) -> DiscoveryCriteria {
-        var aspects: [DescriptorAspect] = [
-            .service(uuid: uuid, serviceData: serviceData),
-            .manufacturer(id: manufacturer, manufacturerData: manufacturerData),
-            .bluetoothRange(range),
-            .supportOptions(supportOptions)
-        ]
-
-        if let nameSubstring {
-            aspects.append(.name(substring: nameSubstring)) // TODO: rename!
-        }
-
-        return DiscoveryCriteria(aspects: aspects)
+        .accessory(
+            uuid: uuid,
+            serviceData: serviceData,
+            manufacturer: manufacturer,
+            manufacturerData: manufacturerData,
+            nameSubstring: nameSubstring,
+            range: range.rawValue,
+            supportOptions: supportOptions.rawValue
+        )
     }
 
+    /// Identify an accessory by its service and name with additional options for the AccessorySetupKit.
+    /// - Parameters:
+    ///   - uuid: The service uuid that the accessory advertises.
+    ///   - serviceData: An optional data descriptor that matches against the service data advertised for the given service uuid.
+    ///   - nameSubstring: Require a given string to be present in the accessory name.
+    ///   - range: A discovery range that is used with the AccessorySetupKit.
+    ///   - supportOptions: Additional accessory support options which are used with the AccessorySetupKit.
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     @available(iOS 18, *)
     public static func accessory(
         advertising uuid: BTUUID,
         serviceData: DataDescriptor? = nil,
-        manufacturer: ManufacturerIdentifier? = nil,
         nameSubstring: String? = nil,
         range: ASDiscoveryDescriptor.Range = .default,
         supportOptions: ASAccessory.SupportOptions = []
     ) -> DiscoveryCriteria {
-        var aspects: [DescriptorAspect] = [
-            .service(uuid: uuid, serviceData: serviceData),
-            .bluetoothRange(range),
-            .supportOptions(supportOptions)
-        ]
+        .accessory(
+            uuid: uuid,
+            serviceData: serviceData,
+            nameSubstring: nameSubstring,
+            range: range.rawValue,
+            supportOptions: supportOptions.rawValue
+        )
+    }
 
-        if let manufacturer {
-            aspects.append(.manufacturer(id: manufacturer))
-        }
+    /// Identify an accessory by its service, manufacturer and name with additional options for the AccessorySetupKit.
+    /// - Parameters:
+    ///   - service: The service type that the accessory advertises.
+    ///   - serviceData: An optional data descriptor that matches against the service data advertised for the given service uuid.
+    ///   - manufacturer: The manufacturer identifier the accessory has to advertise.
+    ///   - manufacturerData: An optional data descriptor that matches against the rest of the manufacturer data.
+    ///   - nameSubstring: Require a given string to be present in the accessory name.
+    ///   - range: A discovery range that is used with the AccessorySetupKit.
+    ///   - supportOptions: Additional accessory support options which are used with the AccessorySetupKit.
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
+    @available(iOS 18, *)
+    public static func accessory<Service: BluetoothService>( // swiftlint:disable:this function_default_parameter_at_end
+        advertising service: Service.Type,
+        serviceData: DataDescriptor? = nil,
+        manufacturer: ManufacturerIdentifier,
+        manufacturerData: DataDescriptor? = nil,
+        nameSubstring: String? = nil,
+        range: ASDiscoveryDescriptor.Range = .default,
+        supportOptions: ASAccessory.SupportOptions = []
+    ) -> DiscoveryCriteria {
+        .accessory(
+            uuid: service.id,
+            serviceData: serviceData,
+            manufacturer: manufacturer,
+            manufacturerData: manufacturerData,
+            nameSubstring: nameSubstring,
+            range: range.rawValue,
+            supportOptions: supportOptions.rawValue
+        )
+    }
 
-        if let nameSubstring {
-            aspects.append(.name(substring: nameSubstring)) // TODO: rename!
-        }
-
-        return DiscoveryCriteria(aspects: aspects)
+    /// Identify an accessory by its service and name with additional options for the AccessorySetupKit.
+    /// - Parameters:
+    ///   - service: The service type that the accessory advertises.
+    ///   - serviceData: An optional data descriptor that matches against the service data advertised for the given service uuid.
+    ///   - nameSubstring: Require a given string to be present in the accessory name.
+    ///   - range: A discovery range that is used with the AccessorySetupKit.
+    ///   - supportOptions: Additional accessory support options which are used with the AccessorySetupKit.
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
+    @available(iOS 18, *)
+    public static func accessory<Service: BluetoothService>(
+        advertising service: Service.Type,
+        serviceData: DataDescriptor? = nil,
+        nameSubstring: String? = nil,
+        range: ASDiscoveryDescriptor.Range = .default,
+        supportOptions: ASAccessory.SupportOptions = []
+    ) -> DiscoveryCriteria {
+        .accessory(
+            uuid: service.id,
+            serviceData: serviceData,
+            nameSubstring: nameSubstring,
+            range: range.rawValue,
+            supportOptions: supportOptions.rawValue
+        )
     }
 
     /// Identify a device by its manufacturer and advertised services.
@@ -156,10 +364,17 @@ extension DiscoveryCriteria {
     /// All supplied services need to be present in the advertisement.
     /// - Parameters:
     ///   - manufacturer: The Bluetooth SIG-assigned manufacturer identifier.
+    ///   - manufacturerData: An optional data descriptor that matches against the rest of the manufacturer data.
+    ///   - nameSubstring: Require a given string to be present in the accessory name.
     ///   - uuids: The service uuids the service advertises.
-    /// - Returns: A ``DiscoveryCriteria/accessory(manufacturer:advertising:)-swift.enum.case`` criteria.
-    public static func accessory(manufacturer: ManufacturerIdentifier, advertising uuids: BTUUID...) -> DiscoveryCriteria {
-        .accessory(manufacturer: manufacturer, advertising: uuids)
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
+    public static func accessory( // swiftlint:disable:this function_default_parameter_at_end
+        manufacturer: ManufacturerIdentifier,
+        manufacturerData: DataDescriptor? = nil,
+        nameSubstring: String? = nil,
+        advertising uuids: BTUUID...
+    ) -> DiscoveryCriteria {
+        .accessory(manufacturer: manufacturer, manufacturerData: manufacturerData, nameSubstring: nameSubstring, advertising: uuids)
     }
 
     /// Identify a device by its manufacturer and advertised services.
@@ -167,15 +382,25 @@ extension DiscoveryCriteria {
     /// All supplied services need to be present in the advertisement.
     /// - Parameters:
     ///   - manufacturer: The Bluetooth SIG-assigned manufacturer identifier.
+    ///   - manufacturerData: An optional data descriptor that matches against the rest of the manufacturer data.
+    ///   - nameSubstring: Require a given string to be present in the accessory name.
     ///   - uuids: The service uuids the service advertises.
-    /// - Returns: A ``DiscoveryCriteria/accessory(manufacturer:advertising:)-swift.enum.case`` criteria.
-    public static func accessory(manufacturer: ManufacturerIdentifier, advertising: [BTUUID]) -> DiscoveryCriteria {
-        let manufacturer: [DescriptorAspect] = [.manufacturer(id: manufacturer)]
-        let serviceIds: [DescriptorAspect] = advertising.map { uuid in
-            .service(uuid: uuid)
-        }.reversed()
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
+    public static func accessory( // swiftlint:disable:this function_default_parameter_at_end
+        manufacturer: ManufacturerIdentifier,
+        manufacturerData: DataDescriptor? = nil,
+        nameSubstring: String? = nil,
+        advertising uuids: [BTUUID]
+    ) -> DiscoveryCriteria {
+        var aspects: [DescriptorAspect] = uuids.map { .service(uuid: $0) }.reversed()
 
-        return DiscoveryCriteria(aspects: manufacturer + serviceIds)
+        aspects.append(.manufacturer(id: manufacturer, manufacturerData: manufacturerData))
+
+        if let nameSubstring {
+            aspects.append(.nameSubstring(nameSubstring))
+        }
+
+        return DiscoveryCriteria(aspects)
     }
 
     /// Identify a device by its manufacturer and advertised service.
@@ -183,26 +408,32 @@ extension DiscoveryCriteria {
     /// All supplied services need to be present in the advertisement.
     /// - Parameters:
     ///   - manufacturer: The Bluetooth SIG-assigned manufacturer identifier.
+    ///   - manufacturerData: An optional data descriptor that matches against the rest of the manufacturer data.
+    ///   - nameSubstring: Require a given string to be present in the accessory name.
     ///   - service: The service type.
     ///   - additionalService: An optional parameter pack argument to supply additional service types the accessory is expected to advertise.
-    /// - Returns: A ``DiscoveryCriteria/accessory(manufacturer:advertising:)-swift.enum.case`` criteria.
-    public static func accessory<Service: BluetoothService, each S: BluetoothService>( // TODO: accessory without manufacturer?
+    /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
+    public static func accessory<Service: BluetoothService, each S: BluetoothService>( // swiftlint:disable:this function_default_parameter_at_end
         manufacturer: ManufacturerIdentifier,
+        manufacturerData: DataDescriptor? = nil,
+        nameSubstring: String? = nil,
         advertising service: Service.Type,
         _ additionalService: repeat (each S).Type
     ) -> DiscoveryCriteria {
         var serviceIds: [BTUUID] = [service.id]
         repeat serviceIds.append((each additionalService).id)
 
-        return .accessory(manufacturer: manufacturer, advertising: serviceIds)
+        return .accessory(manufacturer: manufacturer, manufacturerData: manufacturerData, nameSubstring: nameSubstring, advertising: serviceIds)
     }
-
-    // TODO: additional overloads with range?
 }
 
 
-extension DiscoveryCriteria: Hashable, CustomStringConvertible {
+extension DiscoveryCriteria: Hashable, CustomStringConvertible, CustomDebugStringConvertible {
     public var description: String {
         "DiscoveryCriteria(\(aspects.map { $0.description }.joined(separator: ", ")))"
+    }
+
+    public var debugDescription: String {
+        description
     }
 }

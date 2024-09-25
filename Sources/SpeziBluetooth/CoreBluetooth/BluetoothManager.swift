@@ -49,8 +49,8 @@ import OSLog
 ///
 /// Refer to the documentation of ``BluetoothPeripheral`` on how to interact with a Bluetooth peripheral.
 ///
-/// - Tip: You can also use the ``SwiftUI/View/scanNearbyDevices(enabled:with:discovery:minimumRSSI:advertisementStaleInterval:autoConnect:)``
-///     and ``SwiftUI/View/autoConnect(enabled:with:discovery:minimumRSSI:advertisementStaleInterval:)``
+/// - Tip: You can also use the ``SwiftUICore/View/scanNearbyDevices(enabled:with:discovery:minimumRSSI:advertisementStaleInterval:autoConnect:)``
+///     and ``SwiftUICore/View/autoConnect(enabled:with:discovery:minimumRSSI:advertisementStaleInterval:)``
 ///     modifiers within your SwiftUI view to automatically manage device scanning and/or auto connect to the
 ///     first available device.
 ///
@@ -70,8 +70,8 @@ import OSLog
 /// - ``nearbyPeripherals``
 /// - ``scanNearbyDevices(discovery:minimumRSSI:advertisementStaleInterval:autoConnect:)``
 /// - ``stopScanning()``
-/// - ``SwiftUI/View/scanNearbyDevices(enabled:with:discovery:minimumRSSI:advertisementStaleInterval:autoConnect:)``
-/// - ``SwiftUI/View/autoConnect(enabled:with:discovery:minimumRSSI:advertisementStaleInterval:)``
+/// - ``SwiftUICore/View/scanNearbyDevices(enabled:with:discovery:minimumRSSI:advertisementStaleInterval:autoConnect:)``
+/// - ``SwiftUICore/View/autoConnect(enabled:with:discovery:minimumRSSI:advertisementStaleInterval:)``
 ///
 /// ### Retrieving known Peripherals
 /// - ``retrievePeripheral(for:with:)``
@@ -232,7 +232,7 @@ public class BluetoothManager: Observable, Sendable, Identifiable { // swiftlint
     /// Scans on nearby devices based on the ``DiscoveryDescription`` provided in the initializer.
     /// All discovered devices can be accessed through the ``nearbyPeripherals`` property.
     ///
-    /// - Tip: Scanning for nearby devices can easily be managed via the ``SwiftUI/View/scanNearbyDevices(enabled:with:discovery:minimumRSSI:advertisementStaleInterval:autoConnect:)``
+    /// - Tip: Scanning for nearby devices can easily be managed via the ``SwiftUICore/View/scanNearbyDevices(enabled:with:discovery:minimumRSSI:advertisementStaleInterval:autoConnect:)``
     ///     modifier.
     ///
     /// - Parameters:

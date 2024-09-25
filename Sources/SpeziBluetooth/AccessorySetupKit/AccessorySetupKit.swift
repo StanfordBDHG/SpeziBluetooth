@@ -9,8 +9,6 @@
 import AccessorySetupKit
 import Spezi
 
-// TODO: support name, manufacturer data, service data etc!
-
 
 /// Enable privacy-preserving discovery and configuration of accessories through Apple's AccessorySetupKit.
 ///
@@ -20,7 +18,7 @@ import Spezi
 ///     declaring all the necessary accessory information in your `Info.plist` file.
 @MainActor
 @available(iOS 18.0, *)
-public final class AccessorySetupKit { // TODO: this might support Wifi accessories?
+public final class AccessorySetupKit {
     /// Accessory-related events.
     public enum AccessoryEvent {
         /// The ``AccessorySetupKit/accessories`` property is now available.
@@ -138,7 +136,35 @@ public final class AccessorySetupKit { // TODO: this might support Wifi accessor
         }
     }
 
-    // TODO: finish + fail authorization???
+    /// Finish accessory setup awaiting authorization.
+    /// - Parameters:
+    ///   - accessory: The accessory awaiting authorization.
+    ///   - settings: The accessory settings.
+    public func finishAuthorization(for accessory: ASAccessory, settings: ASAccessorySettings) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            session.finishAuthorization(for: accessory, settings: settings) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
+
+    /// Fail accessory setup awaiting authorization.
+    /// - Parameter accessory: The accessory awaiting authorization.
+    public func failAuthorization(for accessory: ASAccessory) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            session.failAuthorization(for: accessory) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
 
     private func handleSessionEvent(event: ASAccessoryEvent) { // swiftlint:disable:this cyclomatic_complexity
         if let accessory = event.accessory {

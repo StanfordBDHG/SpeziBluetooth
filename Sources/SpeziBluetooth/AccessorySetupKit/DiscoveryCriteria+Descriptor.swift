@@ -9,18 +9,34 @@
 import AccessorySetupKit
 
 
+@available(iOS 18.0, *)
 extension DiscoveryCriteria {
     /// Retrieve the `ASDiscoveryDescriptor` representation for the discovery criteria.
-    @available(iOS 18.0, *)
     public var discoveryDescriptor: ASDiscoveryDescriptor {
         let descriptor = ASDiscoveryDescriptor()
 
-        // TODO: we cannot support more than one bluetoothServiceUUID
+        if aspects.count(where: { $0.isServiceId }) > 1 {
+            Bluetooth.logger.warning(
+                """
+                DiscoveryCriteria has multiple service uuids specified. This is not supported by AccessorySetupKit and only the first one \
+                will be used with the ASDiscoveryDescriptor: \(self).
+                """
+            )
+        }
 
         for aspect in aspects {
             aspect.apply(to: descriptor)
         }
 
         return descriptor
+    }
+    
+    /// Determine if a discovery descriptor matches the specified discovery criteria.
+    /// - Parameter descriptor: The discovery descriptor.
+    /// - Returns: Returns `true` if all discovery aspects are present and matching on the discovery descriptor. The discovery descriptor might have other fields set.
+    public func matches(descriptor: ASDiscoveryDescriptor) -> Bool {
+        aspects.allSatisfy { aspect in
+            aspect.matches(descriptor)
+        }
     }
 }

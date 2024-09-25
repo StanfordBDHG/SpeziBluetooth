@@ -9,24 +9,42 @@
 import AccessorySetupKit
 
 
-enum DescriptorAspect { // TODO: declare a public enum version that is only avaialble for 18.0 and bridges to this one?
-    case name(substring: String) // TODO: just a contains check
+enum DescriptorAspect {
+    case nameSubstring(String) // TODO: does this care for the localName from the advertisement?
     case service(uuid: BTUUID, serviceData: DataDescriptor? = nil)
     case manufacturer(id: ManufacturerIdentifier, manufacturerData: DataDescriptor? = nil)
-    case bluetoothRange(Int)
-    case supportOptions(UInt)
+    case bluetoothRange(Int) // need to store the rawValue to support previous versions
+    case supportOptions(UInt) // need to store the rawValue to support previous versions
+
+    var isServiceId: Bool {
+        if case .service = self {
+            true
+        } else {
+            false
+        }
+    }
+}
+
+
+@available(iOS 18.0, *)
+extension DescriptorAspect {
+    static func bluetoothRange(_ range: ASDiscoveryDescriptor.Range) -> DescriptorAspect {
+        .bluetoothRange(range.rawValue)
+    }
+
+    static func supportOptions(_ options: ASAccessory.SupportOptions) -> DescriptorAspect {
+        .supportOptions(options.rawValue)
+    }
 }
 
 
 extension DescriptorAspect: Sendable, Hashable {}
 
 
-// TODO: this should move to the CoreBluetooth model directory, the whole type maybe?
 extension DescriptorAspect {
     func matches(name: String?, advertisementData: AdvertisementData) -> Bool { // swiftlint:disable:this cyclomatic_complexity
         switch self {
-        case let .name(substring):
-            // TODO: allow to match against local name?
+        case let .nameSubstring(substring):
             guard let name else {
                 return false
             }
@@ -62,7 +80,7 @@ extension DescriptorAspect {
 
             return true
         case .bluetoothRange:
-            return true // range doesn't match against advertisement data // TODO: match against Rsii?
+            return true // range doesn't match against advertisement data
         case .supportOptions:
             return true // options doesn't match against advertisement data
         }
@@ -73,51 +91,24 @@ extension DescriptorAspect {
 extension DescriptorAspect: CustomStringConvertible {
     var description: String {
         switch self {
-        case let .name(substring):
+        case let .nameSubstring(substring):
             ".name(\(substring))"
         case let .service(uuid, serviceData):
             ".service(\(uuid)\(serviceData.map { ", serviceData: \($0.description)" } ?? ""))"
         case let .manufacturer(id, manufacturerData):
             ".manufacturer(\(id)\(manufacturerData.map { ", manufacturerData: \($0.description)" } ?? ""))"
         case let .bluetoothRange(value):
-            ".bluetoothRange(\(value))"
-        case let .supportOptions(value):
-            ".supportOptions(\(value))"
-        }
-        // TODO: update, enums should be mapped to strings and manufacturer data as well!
-    }
-}
-
-
-@available(iOS 18.0, *)
-extension DescriptorAspect {
-    static func bluetoothRange(_ range: ASDiscoveryDescriptor.Range) -> DescriptorAspect {
-        .bluetoothRange(range.rawValue)
-    }
-
-    static func supportOptions(_ options: ASAccessory.SupportOptions) -> DescriptorAspect {
-        .supportOptions(options.rawValue)
-    }
-
-    func apply(to descriptor: ASDiscoveryDescriptor) {
-        switch self {
-        case let .name(substring):
-            descriptor.bluetoothNameSubstring = substring
-        case let .service(uuid, serviceData):
-            descriptor.bluetoothServiceUUID = uuid.cbuuid
-            descriptor.bluetoothServiceDataBlob = serviceData?.data
-            descriptor.bluetoothServiceDataMask = serviceData?.mask
-        case let .manufacturer(id, manufacturerData):
-            descriptor.bluetoothCompanyIdentifier = id.bluetoothCompanyIdentifier
-            descriptor.bluetoothManufacturerDataBlob = manufacturerData?.data
-            descriptor.bluetoothManufacturerDataMask = manufacturerData?.mask
-        case let .bluetoothRange(range):
-            guard let range = ASDiscoveryDescriptor.Range(rawValue: range) else {
-                preconditionFailure("Failed to construct range from raw value \(range)") // TODO: could also just be a log statement!
+            if #available(iOS 18, *), let range = ASDiscoveryDescriptor.Range(rawValue: value) {
+                ".bluetoothRange(\(range))"
+            } else {
+                ".bluetoothRange(rawValue: \(value))"
             }
-            descriptor.bluetoothRange = range
-        case let .supportOptions(options):
-            descriptor.supportedOptions = .init(rawValue: options)
+        case let .supportOptions(value):
+            if #available(iOS 18, *) {
+                ".supportOptions(\(ASAccessory.SupportOptions(rawValue: value)))"
+            } else {
+                ".supportOptions(rawValue: \(value))"
+            }
         }
     }
 }

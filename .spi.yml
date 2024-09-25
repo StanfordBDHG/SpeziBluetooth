@@ -10,6 +10,7 @@ version: 1
 builder:
   configs:
     - platform: ios
+      swift_version: 6.0
       documentation_targets:
       - SpeziBluetooth
       - SpeziBluetoothServices

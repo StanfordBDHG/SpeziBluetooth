@@ -137,7 +137,7 @@ extension View {
     /// discovered for a short period in time.
     ///
     /// - Tip: If you want to continuously search for auto-connectable device in the background,
-    ///     you might want to use the ``SwiftUI/View/autoConnect(enabled:with:minimumRSSI:advertisementStaleInterval:)`` modifier instead.
+    ///     you might want to use the ``SwiftUICore/View/autoConnect(enabled:with:minimumRSSI:advertisementStaleInterval:)`` modifier instead.
     ///
     /// - Parameters:
     ///   - enabled: Flag indicating if nearby device scanning is enabled.
@@ -174,7 +174,7 @@ extension View {
     /// discovered for a short period in time.
     ///
     /// - Tip: If you want to continuously search for auto-connectable device in the background,
-    ///     you might want to use the ``SwiftUI/View/autoConnect(enabled:with:discovery:minimumRSSI:advertisementStaleInterval:)`` modifier instead.
+    ///     you might want to use the ``SwiftUICore/View/autoConnect(enabled:with:discovery:minimumRSSI:advertisementStaleInterval:)`` modifier instead.
     ///
     /// - Parameters:
     ///   - enabled: Flag indicating if nearby device scanning is enabled.

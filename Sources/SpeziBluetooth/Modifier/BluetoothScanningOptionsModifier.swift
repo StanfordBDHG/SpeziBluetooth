@@ -38,12 +38,12 @@ extension View {
     ///
     /// This view modifier can be used to set scanning options for the view hierarchy.
     /// This will overwrite values passed to modifiers like
-    /// ``SwiftUI/View/scanNearbyDevices(enabled:with:discovery:minimumRSSI:advertisementStaleInterval:autoConnect:)``.
+    /// ``SwiftUICore/View/scanNearbyDevices(enabled:with:discovery:minimumRSSI:advertisementStaleInterval:autoConnect:)``.
     ///
     /// ## Topics
     /// ### Accessing Scanning Options
-    /// - ``SwiftUI/EnvironmentValues/minimumRSSI``
-    /// - ``SwiftUI/EnvironmentValues/advertisementStaleInterval``
+    /// - ``SwiftUICore/EnvironmentValues/minimumRSSI``
+    /// - ``SwiftUICore/EnvironmentValues/advertisementStaleInterval``
     ///
     /// - Parameters:
     ///   - minimumRSSI: The minimum rssi a nearby peripheral must have to be considered nearby. Supply `nil` to use default the default value or a value from the environment.

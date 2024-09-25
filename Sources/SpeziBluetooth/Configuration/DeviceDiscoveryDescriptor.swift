@@ -11,15 +11,19 @@
 ///
 /// Provides a strategy on how to discovery given ``BluetoothDevice`` device type.
 public struct DeviceDiscoveryDescriptor {
-    /// The criteria by which we identify a discovered device.
-    public let discoveryCriteria: DiscoveryCriteria
     /// The associated device type.
     public let deviceType: any BluetoothDevice.Type
+    /// The criteria by which we identify a discovered device.
+    public let discoveryCriteria: DiscoveryCriteria
+    /// Describes the appearances of a device.
+    ///
+    /// The appearances can be used by UI components to present the device to the user.
+    public let deviceAppearance: DeviceAppearance
 
-
-    init(discoveryCriteria: DiscoveryCriteria, deviceType: any BluetoothDevice.Type) {
-        self.discoveryCriteria = discoveryCriteria
-        self.deviceType = deviceType
+    init<Device: BluetoothDevice>(from discoverExpression: Discover<Device>) {
+        self.deviceType = discoverExpression.deviceType
+        self.discoveryCriteria = discoverExpression.discoveryCriteria
+        self.deviceAppearance = discoverExpression.appearance
     }
 }
 
