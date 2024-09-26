@@ -49,6 +49,9 @@ let package = Package(
             resources: [
                 .process("Resources")
             ],
+            swiftSettings: [
+                .swiftLanguageMode(.v5) // see https://github.com/swiftlang/swift/issues/76005
+            ],
             plugins: [] + swiftLintPlugin()
         ),
         .target(
