@@ -46,11 +46,24 @@ import Spezi
 ///     init() {}
 /// }
 /// ```
+///
+/// ## Topics
+/// ### Initializer
+/// - ``init()``
+///
+/// ### Appearance
+/// - ``appearance``
+/// - ``DeviceAppearance``
+/// - ``Appearance``
+/// - ``Variant``
+/// - ``DeviceVariantCriteria``
 public protocol BluetoothDevice: AnyObject, Module, Observable, Sendable {
-    /// This initializer allows to provide additional information about device variants. A single ``BluetoothDevice`` implementation might be used with multiple variants
-    /// of a given device class (e.g., multiple models of a blood pressure cuff). You can provide additional device ``Variant``s to describe the visual appearance of the different
-    /// device variants.
-
+    /// Describes the visual appearance of the device.
+    ///
+    /// The device appearance can be used to visually present the device to the user.
+    ///
+    /// A device implementation might be used with multiple variants of a given device class (e.g., multiple models of a blood pressure cuff).
+    /// You can provide additional variants using ``DeviceAppearance/variants(defaultAppearance:variants:)`` to describe the visual appearance of the different device variants.
     static var appearance: DeviceAppearance { get }
 
     /// Initializes the Bluetooth Device.

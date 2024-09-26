@@ -289,6 +289,11 @@ due to their async nature.
 - ``DeviceState``
 - ``DeviceAction``
 
+### AccessorySetupKit Integration
+
+- ``AccessorySetupKit-swift.class``
+- ``AccessorySetupKit-swift.class/AccessoryEvent``
+
 ### Concurrency
 
 - ``SpeziBluetooth/SpeziBluetooth``

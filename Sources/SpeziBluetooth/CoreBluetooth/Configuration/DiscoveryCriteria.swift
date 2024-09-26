@@ -15,31 +15,31 @@ import SpeziFoundation
 /// ## Topics
 ///
 /// ### Discovery by Service Type
-/// - ``advertisedService(_:serviceData:)-7t311``
+/// - ``advertisedService(_:serviceData:)-446yf``
 /// - ``advertisedServices(_:_:)``
 ///
 /// ### Discovery by Service UUID
 ///
-/// - ``advertisedService(_:serviceData:)-24p74``
+/// - ``advertisedService(_:serviceData:)-7ye2y``
 /// - ``advertisedServices(_:)-2ymt0``
 /// - ``advertisedServices(_:)-1s760``
 ///
 /// ### Discovery an Accessory by Service Type
-/// - ``accessory(advertising:serviceData:nameSubstring:)-4mszn``
-/// - ``accessory(advertising:serviceData:manufacturer:manufacturerData:nameSubstring:)-62fgm``
-/// - ``accessory(advertising:serviceData:nameSubstring:range:supportOptions:)-4mu66``
-/// - ``accessory(advertising:serviceData:manufacturer:manufacturerData:nameSubstring:range:supportOptions:)-4qsw9``
+/// - ``accessory(advertising:serviceData:nameSubstring:)-2uola``
+/// - ``accessory(advertising:serviceData:manufacturer:manufacturerData:nameSubstring:)-4xehl``
+/// - ``accessory(advertising:serviceData:nameSubstring:range:supportOptions:)-z6kr``
+/// - ``accessory(advertising:serviceData:manufacturer:manufacturerData:nameSubstring:range:supportOptions:)-5yvyv``
 ///
 /// ### Discovery an Accessory by Service UUID
 ///
-/// - ``accessory(advertising:serviceData:nameSubstring:)-7z8s3``
-/// - ``accessory(advertising:serviceData:manufacturer:manufacturerData:nameSubstring:)-92fkd``
-/// - ``accessory(advertising:serviceData:nameSubstring:range:supportOptions:)-3nom7``
-/// - ``accessory(advertising:serviceData:manufacturer:manufacturerData:nameSubstring:range:supportOptions:)-7z8gg``
+/// - ``accessory(advertising:serviceData:nameSubstring:)-5rzd3``
+/// - ``accessory(advertising:serviceData:manufacturer:manufacturerData:nameSubstring:)-7zwso``
+/// - ``accessory(advertising:serviceData:nameSubstring:range:supportOptions:)-61h91``
+/// - ``accessory(advertising:serviceData:manufacturer:manufacturerData:nameSubstring:range:supportOptions:)-5gotr``
 ///
 /// ### Discovery an Accessory that advertise multiple Services
-/// - ``accessory(manufacturer:manufacturerData:nameSubstring:advertising:)-97a8y``
-/// - ``accessory(manufacturer:manufacturerData:nameSubstring:advertising:)-31jl``
+/// - ``accessory(manufacturer:manufacturerData:nameSubstring:advertising:)-5xdh2``
+/// - ``accessory(manufacturer:manufacturerData:nameSubstring:advertising:)-1j9zn``
 /// - ``accessory(manufacturer:manufacturerData:nameSubstring:advertising:_:)``
 public struct DiscoveryCriteria {
     let aspects: [DescriptorAspect]

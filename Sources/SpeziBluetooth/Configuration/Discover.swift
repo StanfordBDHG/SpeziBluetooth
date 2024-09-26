@@ -20,13 +20,7 @@
 /// ## Topics
 ///
 /// ### Discovering a device
-///
-/// - ``init(_:by:appearance:)``
-/// - ``init(_:by:appearance:variants:)``
-///
-/// ### Instance Properties
-/// - ``deviceType``
-/// - ``discoveryCriteria``
+/// - ``init(_:by:)``
 ///
 /// ### Semantic Model
 /// - ``DeviceDiscoveryDescriptor``
@@ -39,7 +33,6 @@ public struct Discover<Device: BluetoothDevice> {
     /// - Parameters:
     ///   - device: The type of a ``BluetoothDevice`` implementation.
     ///   - discoveryCriteria: The criteria by which the device is discovered.
-    ///   - appearance: Describes how the device should be visually presented in UI components.
     public init(_ device: Device.Type, by discoveryCriteria: DiscoveryCriteria) {
         self.deviceType = device
         self.discoveryCriteria = discoveryCriteria

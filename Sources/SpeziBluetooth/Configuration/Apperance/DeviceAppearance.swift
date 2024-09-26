@@ -9,7 +9,7 @@
 import SpeziViews
 
 
-/// Describes the appearances of a device.
+/// Describes the appearances and variants of a device.
 public enum DeviceAppearance {
     /// The appearance for the device.
     case appearance(Appearance)
