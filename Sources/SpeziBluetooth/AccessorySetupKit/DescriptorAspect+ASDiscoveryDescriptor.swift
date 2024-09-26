@@ -7,6 +7,7 @@
 //
 
 import AccessorySetupKit
+import SpeziFoundation
 
 
 @available(iOS 18.0, *)
@@ -62,5 +63,15 @@ extension DescriptorAspect {
         case let .supportOptions(value):
             descriptor.supportedOptions.contains(ASAccessory.SupportOptions(rawValue: value))
         }
+    }
+}
+
+
+extension DataDescriptor {
+    fileprivate init?(dataProperty: Data?, maskProperty: Data?) {
+        guard let dataProperty, let maskProperty, dataProperty.count == maskProperty.count else {
+            return nil
+        }
+        self.init(data: dataProperty, mask: maskProperty)
     }
 }

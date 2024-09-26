@@ -7,10 +7,12 @@
 //
 
 import AccessorySetupKit
+import SpeziFoundation
 
 
 enum DescriptorAspect {
-    case nameSubstring(String) // TODO: does this care for the localName from the advertisement?
+    /// Matches the ``AdvertisementData/localName``if it is present. If not (and only then) it matches against the GAP name.
+    case nameSubstring(String)
     case service(uuid: BTUUID, serviceData: DataDescriptor? = nil)
     case manufacturer(id: ManufacturerIdentifier, manufacturerData: DataDescriptor? = nil)
     case bluetoothRange(Int) // need to store the rawValue to support previous versions
@@ -45,11 +47,17 @@ extension DescriptorAspect {
     func matches(name: String?, advertisementData: AdvertisementData) -> Bool { // swiftlint:disable:this cyclomatic_complexity
         switch self {
         case let .nameSubstring(substring):
-            guard let name else {
-                return false
-            }
+            // This is (sadly) the behavior of the accessory setup kit.
+            // If there is a local name in the advertisement it matches (and only matches!) against the local name.
+            // Otherwise, it uses the accessory name.
 
-            return name.contains(substring)
+            return if let localName = advertisementData.localName {
+                localName.contains(substring)
+            } else if let name {
+                name.contains(substring)
+            } else {
+                false
+            }
         case let .service(uuid, serviceData):
             guard advertisementData.serviceUUIDs?.contains(uuid) ?? advertisementData.overflowServiceUUIDs?.contains(uuid) ?? false else {
                 return false

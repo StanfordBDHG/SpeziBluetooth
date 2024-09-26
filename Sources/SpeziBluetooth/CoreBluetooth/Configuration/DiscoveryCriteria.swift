@@ -7,6 +7,7 @@
 //
 
 import AccessorySetupKit
+import SpeziFoundation
 
 
 /// The criteria by which we identify a discovered device.
@@ -170,6 +171,8 @@ extension DiscoveryCriteria {
     ///   - manufacturer: The manufacturer identifier the accessory has to advertise.
     ///   - manufacturerData: An optional data descriptor that matches against the rest of the manufacturer data.
     ///   - nameSubstring: Require a given string to be present in the accessory name.
+    ///         The substring is matched against the ``AdvertisementData/localName`` if it is present.
+    ///         If it is not present, the substring will be matched against the GAP device name.
     /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     public static func accessory( // swiftlint:disable:this function_default_parameter_at_end
         advertising uuid: BTUUID,
@@ -192,6 +195,8 @@ extension DiscoveryCriteria {
     ///   - uuid: The service uuid that the accessory advertises.
     ///   - serviceData: An optional data descriptor that matches against the service data advertised for the given service uuid.
     ///   - nameSubstring: Require a given string to be present in the accessory name.
+    ///         The substring is matched against the ``AdvertisementData/localName`` if it is present.
+    ///         If it is not present, the substring will be matched against the GAP device name.
     /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     public static func accessory(
         advertising uuid: BTUUID,
@@ -212,6 +217,8 @@ extension DiscoveryCriteria {
     ///   - manufacturer: The manufacturer identifier the accessory has to advertise.
     ///   - manufacturerData: An optional data descriptor that matches against the rest of the manufacturer data.
     ///   - nameSubstring: Require a given string to be present in the accessory name.
+    ///         The substring is matched against the ``AdvertisementData/localName`` if it is present.
+    ///         If it is not present, the substring will be matched against the GAP device name.
     /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     public static func accessory<Service: BluetoothService>( // swiftlint:disable:this function_default_parameter_at_end
         advertising service: Service.Type,
@@ -234,6 +241,8 @@ extension DiscoveryCriteria {
     ///   - service: The service type that the accessory advertises.
     ///   - serviceData: An optional data descriptor that matches against the service data advertised for the given service uuid.
     ///   - nameSubstring: Require a given string to be present in the accessory name.
+    ///         The substring is matched against the ``AdvertisementData/localName`` if it is present.
+    ///         If it is not present, the substring will be matched against the GAP device name.
     /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     public static func accessory<Service: BluetoothService>(
         advertising service: Service.Type,
@@ -254,6 +263,8 @@ extension DiscoveryCriteria {
     ///   - manufacturer: The manufacturer identifier the accessory has to advertise.
     ///   - manufacturerData: An optional data descriptor that matches against the rest of the manufacturer data.
     ///   - nameSubstring: Require a given string to be present in the accessory name.
+    ///         The substring is matched against the ``AdvertisementData/localName`` if it is present.
+    ///         If it is not present, the substring will be matched against the GAP device name.
     ///   - range: A discovery range that is used with the AccessorySetupKit.
     ///   - supportOptions: Additional accessory support options which are used with the AccessorySetupKit.
     /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
@@ -283,6 +294,8 @@ extension DiscoveryCriteria {
     ///   - uuid: The service uuid that the accessory advertises.
     ///   - serviceData: An optional data descriptor that matches against the service data advertised for the given service uuid.
     ///   - nameSubstring: Require a given string to be present in the accessory name.
+    ///         The substring is matched against the ``AdvertisementData/localName`` if it is present.
+    ///         If it is not present, the substring will be matched against the GAP device name.
     ///   - range: A discovery range that is used with the AccessorySetupKit.
     ///   - supportOptions: Additional accessory support options which are used with the AccessorySetupKit.
     /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
@@ -310,6 +323,8 @@ extension DiscoveryCriteria {
     ///   - manufacturer: The manufacturer identifier the accessory has to advertise.
     ///   - manufacturerData: An optional data descriptor that matches against the rest of the manufacturer data.
     ///   - nameSubstring: Require a given string to be present in the accessory name.
+    ///         The substring is matched against the ``AdvertisementData/localName`` if it is present.
+    ///         If it is not present, the substring will be matched against the GAP device name.
     ///   - range: A discovery range that is used with the AccessorySetupKit.
     ///   - supportOptions: Additional accessory support options which are used with the AccessorySetupKit.
     /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
@@ -339,6 +354,8 @@ extension DiscoveryCriteria {
     ///   - service: The service type that the accessory advertises.
     ///   - serviceData: An optional data descriptor that matches against the service data advertised for the given service uuid.
     ///   - nameSubstring: Require a given string to be present in the accessory name.
+    ///         The substring is matched against the ``AdvertisementData/localName`` if it is present.
+    ///         If it is not present, the substring will be matched against the GAP device name.
     ///   - range: A discovery range that is used with the AccessorySetupKit.
     ///   - supportOptions: Additional accessory support options which are used with the AccessorySetupKit.
     /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
@@ -366,6 +383,8 @@ extension DiscoveryCriteria {
     ///   - manufacturer: The Bluetooth SIG-assigned manufacturer identifier.
     ///   - manufacturerData: An optional data descriptor that matches against the rest of the manufacturer data.
     ///   - nameSubstring: Require a given string to be present in the accessory name.
+    ///         The substring is matched against the ``AdvertisementData/localName`` if it is present.
+    ///         If it is not present, the substring will be matched against the GAP device name.
     ///   - uuids: The service uuids the service advertises.
     /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     public static func accessory( // swiftlint:disable:this function_default_parameter_at_end
@@ -384,6 +403,8 @@ extension DiscoveryCriteria {
     ///   - manufacturer: The Bluetooth SIG-assigned manufacturer identifier.
     ///   - manufacturerData: An optional data descriptor that matches against the rest of the manufacturer data.
     ///   - nameSubstring: Require a given string to be present in the accessory name.
+    ///         The substring is matched against the ``AdvertisementData/localName`` if it is present.
+    ///         If it is not present, the substring will be matched against the GAP device name.
     ///   - uuids: The service uuids the service advertises.
     /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     public static func accessory( // swiftlint:disable:this function_default_parameter_at_end
@@ -410,6 +431,8 @@ extension DiscoveryCriteria {
     ///   - manufacturer: The Bluetooth SIG-assigned manufacturer identifier.
     ///   - manufacturerData: An optional data descriptor that matches against the rest of the manufacturer data.
     ///   - nameSubstring: Require a given string to be present in the accessory name.
+    ///         The substring is matched against the ``AdvertisementData/localName`` if it is present.
+    ///         If it is not present, the substring will be matched against the GAP device name.
     ///   - service: The service type.
     ///   - additionalService: An optional parameter pack argument to supply additional service types the accessory is expected to advertise.
     /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.

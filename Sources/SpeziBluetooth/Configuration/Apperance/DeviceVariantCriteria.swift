@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
+import SpeziFoundation
 import SpeziViews
 
 
@@ -45,6 +46,9 @@ extension DeviceVariantCriteria: Sendable, Hashable {}
 
 extension DeviceVariantCriteria {
     /// Match against the device name.
+    ///
+    /// If there is a ``AdvertisementData/localName`` present in the advertisement, the name substring matches against the advertisement name.
+    /// If the localName is not present (any only then), the substring is matched against the GAP device name.
     /// - Parameter substring: The name substring that has to be part of the advertised name.
     /// - Returns: Returns the `DeviceVariantCriteria`.
     public static func nameSubstring(_ substring: String) -> DeviceVariantCriteria {

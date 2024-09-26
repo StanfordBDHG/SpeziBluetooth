@@ -23,7 +23,6 @@ public struct Appearance {
     ///   - name: Provides a user-friendly name for the device.
     ///   - icon: An icon that is used to refer to the device.
     public init(name: String, icon: ImageReference = .system("sensor")) {
-        // TODO: apply icon scaling for accessory setup kit!
         self.name = name
         self.icon = icon
     }

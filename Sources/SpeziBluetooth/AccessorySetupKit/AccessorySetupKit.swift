@@ -204,7 +204,7 @@ public final class AccessorySetupKit {
         case .pickerDidDismiss:
             state.pickerPresented = false
         case .pickerSetupBridging, .pickerSetupFailed, .pickerSetupPairing, .pickerSetupRename:
-            break // TODO: show picker setup state?
+            break
         case .unknown:
             break
         @unknown default:
@@ -216,3 +216,61 @@ public final class AccessorySetupKit {
 
 @available(iOS 18.0, *)
 extension AccessorySetupKit: Module, DefaultInitializable, Sendable {}
+
+
+@available(iOS 18.0, *)
+extension AccessorySetupKit.AccessoryEvent: Sendable, Hashable {}
+
+
+@available(iOS 18.0, *)
+extension AccessorySetupKit.AccessoryEvent: CustomStringConvertible, CustomDebugStringConvertible {
+    public var description: String {
+        switch self {
+        case .available:
+            "available"
+        case let .added(accessory):
+            ".added(\(accessory))"
+        case let .removed(accessory):
+            ".removed(\(accessory))"
+        case let .changed(accessory):
+            ".changed(\(accessory))"
+        }
+    }
+
+    public var debugDescription: String {
+        description
+    }
+}
+
+
+@available(iOS 18.0, *)
+extension AccessorySetupKit {
+    /// A supported protocol of the accessory setup kit.
+    public struct SupportedProtocol {
+        /// The raw value identifier.
+        public let rawValue: String
+        
+        /// Initialize a new supported protocol.
+        /// - Parameter rawValue: The raw value identifier.
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+    }
+    
+    /// Retrieve the supported protocols that are defined in the `Info.plist` of the `main` bundle.
+    public var supportedProtocols: [SupportedProtocol] {
+        (Bundle.main.object(forInfoDictionaryKey: "NSAccessorySetupKitSupports") as? [String] ?? []).map { .init(rawValue: $0) }
+    }
+}
+
+
+@available(iOS 18.0, *)
+extension AccessorySetupKit.SupportedProtocol: Hashable, Sendable, RawRepresentable {}
+
+@available(iOS 18.0, *)
+extension AccessorySetupKit.SupportedProtocol {
+    /// Discover accessories using Bluetooth or Bluetooth Low Energy.
+    public static let bluetooth = AccessorySetupKit.SupportedProtocol(rawValue: "Bluetooth")
+    /// Discover accessories using wifi SSIDs.
+    public static let wifi = AccessorySetupKit.SupportedProtocol(rawValue: "WiFi")
+}
