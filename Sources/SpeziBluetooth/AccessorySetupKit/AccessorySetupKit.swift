@@ -43,7 +43,7 @@ public final class AccessorySetupKit {
     @Application(\.logger)
     private var logger
 
-    @preconcurrency private let session = ASAccessorySession()
+    private let session = ASAccessorySession()
     private let state = State()
 
     /// Determine if the accessory picker is currently being presented.
