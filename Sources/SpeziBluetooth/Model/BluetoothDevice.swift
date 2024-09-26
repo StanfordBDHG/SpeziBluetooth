@@ -28,7 +28,31 @@ import Spezi
 ///     init() {}
 /// }
 /// ```
+///
+/// ### Describing Device Appearance
+///
+/// You can use the ``appearance`` property to customize the ``Appearance`` of your device and how UI components might present
+/// the device to the user.
+///
+/// Your device might implement the logic for multiple device variants that might have a different appearance. Provide a ``DeviceAppearance`` to describe the appearance of your device
+///
+/// ```swift
+/// final class MyBluetoothDevice: BluetoothDevice {
+///     static let appearance: DeviceAppearance = .variants(defaultAppearance: Appearance(name: "Weight Scale"), variants: [
+///         Variant(id: "model-p1", name: "Weight Scale P1", icon: .asset("Model-P1"), criteria: .nameSubstring("WS-P1")),
+///         Variant(id: "model-x2", name: "Weight Scale X2", icon: .asset("Model-X2"), criteria: .nameSubstring("WS-X2"))
+///     ])
+///
+///     init() {}
+/// }
+/// ```
 public protocol BluetoothDevice: AnyObject, Module, Observable, Sendable {
+    /// This initializer allows to provide additional information about device variants. A single ``BluetoothDevice`` implementation might be used with multiple variants
+    /// of a given device class (e.g., multiple models of a blood pressure cuff). You can provide additional device ``Variant``s to describe the visual appearance of the different
+    /// device variants.
+
+    static var appearance: DeviceAppearance { get }
+
     /// Initializes the Bluetooth Device.
     ///
     /// This initializer is called automatically when a peripheral of this type connects.
@@ -38,4 +62,11 @@ public protocol BluetoothDevice: AnyObject, Module, Observable, Sendable {
     /// - Note: This initializer is also called upon configuration to inspect the device structure.
     ///     You might want to make sure to not perform any heavy processing within the initializer.
     init()
+}
+
+
+extension BluetoothDevice {
+    static var appearance: DeviceAppearance {
+        .appearance(Appearance(name: "\(Self.self)"))
+    }
 }
