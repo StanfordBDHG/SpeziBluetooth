@@ -18,4 +18,13 @@ extension DeviceVariantCriteria {
             aspect.apply(to: descriptor)
         }
     }
+
+    /// Determine if a discovery descriptor matches the device variant criteria.
+    /// - Parameter descriptor: The discovery descriptor.
+    /// - Returns: Returns `true` if all discovery aspects are present and matching on the discovery descriptor. The discovery descriptor might have other fields set.
+    public func matches(descriptor: ASDiscoveryDescriptor) -> Bool {
+        aspects.allSatisfy { aspect in
+            aspect.matches(descriptor)
+        }
+    }
 }
