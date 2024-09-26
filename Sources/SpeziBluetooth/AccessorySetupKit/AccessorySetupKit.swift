@@ -258,7 +258,7 @@ extension AccessorySetupKit {
     }
     
     /// Retrieve the supported protocols that are defined in the `Info.plist` of the `main` bundle.
-    public var supportedProtocols: [SupportedProtocol] {
+    public static var supportedProtocols: [SupportedProtocol] {
         (Bundle.main.object(forInfoDictionaryKey: "NSAccessorySetupKitSupports") as? [String] ?? []).map { .init(rawValue: $0) }
     }
 }
