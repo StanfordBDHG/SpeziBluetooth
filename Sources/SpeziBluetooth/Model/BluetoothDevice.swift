@@ -66,7 +66,8 @@ public protocol BluetoothDevice: AnyObject, Module, Observable, Sendable {
 
 
 extension BluetoothDevice {
-    static var appearance: DeviceAppearance {
+    /// Default device appearance that uses the type name as the name.
+    public static var appearance: DeviceAppearance {
         .appearance(Appearance(name: "\(Self.self)"))
     }
 }
