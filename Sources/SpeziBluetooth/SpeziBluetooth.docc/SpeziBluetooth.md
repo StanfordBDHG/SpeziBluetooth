@@ -292,7 +292,7 @@ due to their async nature.
 ### AccessorySetupKit Integration
 
 - ``AccessorySetupKit-swift.class``
-- ``AccessorySetupKit-swift.class/AccessoryEvent``
+- ``AccessorySetupKitError``
 
 ### Concurrency
 

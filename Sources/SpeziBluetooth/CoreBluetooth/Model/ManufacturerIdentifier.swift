@@ -13,6 +13,11 @@ import NIOCore
 /// Bluetooth SIG-assigned Manufacturer Identifier.
 ///
 /// Refer to Assigned Numbers 7. Company Identifiers.
+///
+/// ## Topics
+///
+/// ### AccessorySetupKit
+/// - ``bluetoothCompanyIdentifier``
 public struct ManufacturerIdentifier {
     /// The raw manufacturer identifier.
     public let rawValue: UInt16

@@ -15,7 +15,35 @@ import Spezi
 /// This module enables to discover and configure Bluetooth or Wi-Fi accessories using Apple's [AccessorySetupKit](https://developer.apple.com/documentation/accessorysetupkit).
 ///
 /// - Important: Make sure to follow all the setup instructions in [Declare your app's accessories](https://developer.apple.com/documentation/accessorysetupkit/discovering-and-configuring-accessories#Declare-your-apps-accessories)
-///     declaring all the necessary accessory information in your `Info.plist` file.
+///     to declare all the necessary accessory information in your `Info.plist` file.
+///
+/// ## Topics
+///
+/// ### Configuration
+/// - ``init()``
+///
+/// ### Discovered Accessories
+/// - ``accessories``
+///
+/// ### Observe Accessory Changes
+/// - ``accessoryChanges``
+/// - ``AccessoryEvent``
+///
+/// ### Displaying an accessory picker
+/// - ``showPicker(for:)``
+/// - ``pickerPresented``
+///
+/// ### Managing Accessories
+/// - ``renameAccessory(_:options:)``
+/// - ``removeAccessory(_:)``
+///
+/// ### Managing Authorization
+/// - ``finishAuthorization(for:settings:)``
+/// - ``failAuthorization(for:)``
+///
+/// ### Determine Support
+/// - ``supportedProtocols``
+/// - ``SupportedProtocol``
 @MainActor
 @available(iOS 18.0, *)
 public final class AccessorySetupKit {
@@ -87,7 +115,7 @@ public final class AccessorySetupKit {
             }
         }
     }
-    
+
     /// Discover display items in picker.
     /// - Parameter items: The known display items to discover.
     public func showPicker(for items: [ASPickerDisplayItem]) async throws {
@@ -96,7 +124,7 @@ public final class AccessorySetupKit {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             session.showPicker(for: items) { error in
                 if let error {
-                    continuation.resume(throwing: error)
+                    continuation.resume(throwing: AccessorySetupKitError.mapError(error))
                 } else {
                     continuation.resume()
                 }
@@ -105,6 +133,8 @@ public final class AccessorySetupKit {
     }
     
     /// Rename accessory.
+    ///
+    /// Calling this method will show a picker view that allows to rename the accessory.
     /// - Parameters:
     ///   - accessory: The accessory.
     ///   - renameOptions: The rename options.
@@ -112,7 +142,7 @@ public final class AccessorySetupKit {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             session.renameAccessory(accessory, options: renameOptions) { error in
                 if let error {
-                    continuation.resume(throwing: error)
+                    continuation.resume(throwing: AccessorySetupKitError.mapError(error))
                 } else {
                     continuation.resume()
                 }
@@ -128,7 +158,7 @@ public final class AccessorySetupKit {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             session.removeAccessory(accessory) { error in
                 if let error {
-                    continuation.resume(throwing: error)
+                    continuation.resume(throwing: AccessorySetupKitError.mapError(error))
                 } else {
                     continuation.resume()
                 }
@@ -144,7 +174,7 @@ public final class AccessorySetupKit {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             session.finishAuthorization(for: accessory, settings: settings) { error in
                 if let error {
-                    continuation.resume(throwing: error)
+                    continuation.resume(throwing: AccessorySetupKitError.mapError(error))
                 } else {
                     continuation.resume()
                 }
@@ -158,7 +188,7 @@ public final class AccessorySetupKit {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             session.failAuthorization(for: accessory) { error in
                 if let error {
-                    continuation.resume(throwing: error)
+                    continuation.resume(throwing: AccessorySetupKitError.mapError(error))
                 } else {
                     continuation.resume()
                 }

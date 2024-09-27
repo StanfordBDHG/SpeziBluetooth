@@ -13,6 +13,21 @@ import SpeziViews
 /// Describes the identifying criteria for a device variant.
 ///
 /// For more information refer to ``Variant``.
+///
+/// ## Topics
+///
+/// ### Criteria
+/// - ``service(_:serviceData:)-8g3u6``
+/// - ``service(_:serviceData:)-7fadh``
+/// - ``nameSubstring(_:)``
+/// - ``manufacturer(_:manufacturerData:)``
+///
+/// ### Match against discovery information
+/// - ``matches(name:advertisementData:)``
+///
+/// ### Accessory Setup Kit
+/// - ``apply(to:)``
+/// - ``matches(descriptor:)``
 public struct DeviceVariantCriteria {
     let aspects: [DescriptorAspect]
 
