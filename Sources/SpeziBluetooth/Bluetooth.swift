@@ -286,7 +286,7 @@ public final class Bluetooth: Module, EnvironmentAccessible, @unchecked Sendable
     /// Subscribe to changes of the `state` property.
     ///
     /// Creates an `AsyncStream` that yields all **future** changes to the ``state`` property.
-    public var stateSubscription: AsyncStream<BluetoothState> {
+    public nonisolated var stateSubscription: AsyncStream<BluetoothState> {
         bluetoothManager.stateSubscription
     }
 

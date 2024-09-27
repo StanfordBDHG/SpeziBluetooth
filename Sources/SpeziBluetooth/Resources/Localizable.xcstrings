@@ -21,6 +21,16 @@
         }
       }
     },
+    "Bluetooth must be powered on for this operation." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth must be powered on for this operation."
+          }
+        }
+      }
+    },
     "Busy" : {
       "localizations" : {
         "en" : {
@@ -137,6 +147,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invalid Request"
+          }
+        }
+      }
+    },
+    "Invalid State" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid State"
           }
         }
       }
