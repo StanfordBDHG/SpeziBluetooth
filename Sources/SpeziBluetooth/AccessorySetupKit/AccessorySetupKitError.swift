@@ -115,3 +115,72 @@ extension AccessorySetupKitError {
         }
     }
 }
+
+
+extension AccessorySetupKitError: LocalizedError {
+    public var errorDescription: String? {
+        String(localized: errorDescriptionLocalization, bundle: .module)
+    }
+
+    public var failureReason: String? {
+        String(localized: failureReasonLocalization, bundle: .module)
+    }
+
+    private var errorDescriptionLocalization: String.LocalizationValue {
+        switch self {
+        case .success:
+            "Success"
+        case .unknown:
+            "Unknown"
+        case .activationFailed:
+            "Activation Failed"
+        case .connectionFailed:
+            "Connection Failed"
+        case .discoveryTimeout:
+            "Discovery Timeout"
+        case .extensionNotFound:
+            "Extension Not Found"
+        case .invalidated:
+            "Invalidated"
+        case .invalidRequest:
+            "Invalid Request"
+        case .pickerAlreadyActive:
+            "Busy"
+        case .pickerRestricted:
+            "Restricted"
+        case .userCancelled:
+            "Cancelled"
+        case .userRestricted:
+            "Restricted"
+        }
+    }
+
+    private var failureReasonLocalization: String.LocalizationValue {
+        switch self {
+        case .success:
+            "Operation completed successfully."
+        case .unknown:
+            "Unknown error occurred."
+        case .activationFailed:
+            "Unable to activate discovery session."
+        case .connectionFailed:
+            "Unable to establish connection with the accessory."
+        case .discoveryTimeout:
+            "Discovery session timed out."
+        case .extensionNotFound:
+            "Unable to locate the App Extension."
+        case .invalidated:
+            "Invalidate was called before the operation completed normally."
+        case .invalidRequest:
+            "Received an invalid request."
+        case .pickerAlreadyActive:
+            "The picker is already active."
+        case .pickerRestricted:
+            "The picker is restricted due to the application being in the background."
+        case .userCancelled:
+            "The user cancelled the discovery."
+        case .userRestricted:
+            "Access was restricted by the user."
+        }
+    }
+}
