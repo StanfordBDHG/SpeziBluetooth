@@ -198,9 +198,9 @@ public final class AccessorySetupKit {
 
     private func handleSessionEvent(event: ASAccessoryEvent) { // swiftlint:disable:this cyclomatic_complexity
         if let accessory = event.accessory {
-            logger.debug("Received Accessory Setup session event \(event.eventType) for accessory \(accessory)")
+            logger.debug("Dispatching Accessory Session event \(event.eventType) for accessory \(accessory)")
         } else {
-            logger.debug("Received Accessory Setup session event \(event.eventType)")
+            logger.debug("Dispatching Accessory Session event \(event.eventType)")
         }
 
         switch event.eventType {

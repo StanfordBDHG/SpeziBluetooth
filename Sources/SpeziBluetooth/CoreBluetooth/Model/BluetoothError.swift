@@ -22,6 +22,9 @@ public enum BluetoothError: Error, CustomStringConvertible, LocalizedError {
     /// Request is in progress.
     /// Request was sent to a control point characteristic while a different request is waiting for a response.
     case controlPointInProgress(service: BTUUID, characteristic: BTUUID)
+    /// Trying to interact with BluetoothManager while not being in the ``BluetoothState/poweredOn`` state.
+    ///
+    /// You cannot connect or disconnect peripherals if the underlying central manager is not powered on.
     case invalidState(BluetoothState)
 
     

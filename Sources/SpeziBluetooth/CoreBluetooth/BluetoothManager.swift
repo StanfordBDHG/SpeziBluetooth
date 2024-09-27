@@ -198,10 +198,13 @@ public class BluetoothManager: Observable, Sendable, Identifiable { // swiftlint
     }
 
     func cleanupCBCentral() {
+        let hadCentral = _centralManager != nil
         _centralManager = nil
         isScanningObserver = nil
-        lastManuallyDisconnectedDevice = nil
-        logger.debug("Destroyed the underlying CBCentralManager.")
+        
+        if hadCentral {
+            logger.debug("Destroyed the underlying CBCentralManager.")
+        }
     }
 
     /// Request to power up the Bluetooth Central.
@@ -323,6 +326,13 @@ public class BluetoothManager: Observable, Sendable, Identifiable { // swiftlint
     private func handlePoweredOn() {
         if let discoverySession, !isScanning {
             _scanForPeripherals(using: discoverySession)
+        }
+    }
+
+    private func handlePoweredOff() {
+        for peripheral in knownPeripherals.values {
+            // TODO: verify correct implementation
+            discardDevice(device: peripheral, error: CancellationError())
         }
     }
 
@@ -621,9 +631,12 @@ extension BluetoothManager {
                 manager.storage.update(state: state)
                 logger.info("BluetoothManager central state is now \(manager.state)")
 
-                if case .poweredOn = state {
+                switch state {
+                case .poweredOn:
                     manager.handlePoweredOn()
-                } else if case .unauthorized = state {
+                case .poweredOff:
+                    manager.handlePoweredOff()
+                case .unauthorized:
                     switch CBCentralManager.authorization {
                     case .denied:
                         logger.log("Unauthorized reason: Access to Bluetooth was denied.")
@@ -632,6 +645,8 @@ extension BluetoothManager {
                     default:
                         break
                     }
+                case .unsupported, .unknown:
+                    break
                 }
             }
         }
