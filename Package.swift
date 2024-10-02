@@ -19,7 +19,7 @@ let package = Package(
         .iOS(.v17),
         .macCatalyst(.v17),
         .macOS(.v14),
-        .visionOS(v1),
+        .visionOS(.v1),
         .watchOS(.v10), // TODO: add SPM tests on these new targets! vision, watch, tv
         .tvOS(.v17)
     ],
