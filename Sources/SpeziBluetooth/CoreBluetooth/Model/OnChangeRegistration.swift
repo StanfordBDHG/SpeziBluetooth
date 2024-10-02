@@ -28,24 +28,25 @@ public final class OnChangeRegistration {
         self.handlerId = handlerId
     }
 
+    private static func cancel(peripheral: BluetoothPeripheral?, locator: CharacteristicLocator, handlerId: UUID) {
+        guard let peripheral else {
+            return
+        }
+        Task.detached { @SpeziBluetooth in
+            peripheral.deregisterOnChange(locator: locator, handlerId: handlerId)
+        }
+    }
+
 
     /// Cancel the on-change handler registration.
     public func cancel() {
-        Task { @SpeziBluetooth in
-            peripheral?.deregisterOnChange(self)
-        }
+        Self.cancel(peripheral: peripheral, locator: locator, handlerId: handlerId)
     }
 
 
     deinit {
         // make sure we don't capture self after this deinit
-        let peripheral = peripheral
-        let locator = locator
-        let handlerId = handlerId
-
-        Task.detached { @Sendable @SpeziBluetooth in
-            peripheral?.deregisterOnChange(locator: locator, handlerId: handlerId)
-        }
+        Self.cancel(peripheral: peripheral, locator: locator, handlerId: handlerId)
     }
 }
 

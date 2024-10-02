@@ -26,6 +26,7 @@ final class BluetoothManagerStorage: ValueObservable, Sendable {
         }
     }
     @SpeziBluetooth @ObservationIgnored private var subscribedContinuations: [UUID: AsyncStream<BluetoothState>.Continuation] = [:]
+    @SpeziBluetooth @ObservationIgnored private var subscribedEventHandlers: [UUID: (BluetoothState) -> Void] = [:]
 
     /// Note: we track, based on the CoreBluetooth reported connected state.
     @SpeziBluetooth var connectedDevices: Set<UUID> = []
@@ -65,6 +66,9 @@ final class BluetoothManagerStorage: ValueObservable, Sendable {
 
             for continuation in subscribedContinuations.values {
                 continuation.yield(state)
+            }
+            for handler in subscribedEventHandlers.values {
+                handler(state)
             }
         }
     }
@@ -116,8 +120,16 @@ final class BluetoothManagerStorage: ValueObservable, Sendable {
     }
 
     @SpeziBluetooth
+    func subscribe(_ handler: @escaping (BluetoothState) -> Void) -> StateChangeHandlerRegistration {
+        let id = UUID()
+        subscribedEventHandlers[id] = handler
+        return StateChangeHandlerRegistration(id: id, storage: self)
+    }
+
+    @SpeziBluetooth
     func unsubscribe(for id: UUID) {
         subscribedContinuations[id] = nil
+        subscribedEventHandlers[id] = nil
     }
 
     @SpeziBluetooth

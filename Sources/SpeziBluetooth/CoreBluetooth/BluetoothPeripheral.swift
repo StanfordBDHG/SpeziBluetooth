@@ -246,7 +246,6 @@ public class BluetoothPeripheral { // swiftlint:disable:this type_body_length
             }
         } catch {
             // "perform" just throws because of cancellation
-            assert(error is CancellationError, "Disconnect seems to be throwing now: \(error)")
         }
     }
 

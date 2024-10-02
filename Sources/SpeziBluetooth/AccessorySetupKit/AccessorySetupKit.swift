@@ -259,7 +259,7 @@ extension AccessorySetupKit {
     /// An event handler registration for accessory events.
     ///
     /// It automatically cancels the subscription once this value is de-initialized.
-    public struct EventHandlerRegistration: ~Copyable {
+    public struct EventHandlerRegistration: ~Copyable { // TODO: just make it a global type?
         private let id: UUID
         private weak var setupKit: AccessorySetupKit?
 
