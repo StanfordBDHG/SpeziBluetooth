@@ -632,7 +632,7 @@ extension BluetoothManager {
             // form a Swift Runtime perspective.
             // Refer to _isCurrentExecutor (checked in assumeIsolated):
             // https://github.com/apple/swift/blob/9e2b97c0fd675efaa5b815748d8567d781415c8c/stdlib/public/Concurrency/Actor.cpp#L317
-            // Also refer to te implementation of assumeIsolated:
+            // Also refer to the implementation of assumeIsolated:
             // https://github.com/apple/swift/blob/a1062d06e9f33512b0005d589e3b086a89cfcbd1/stdlib/public/Concurrency/ExecutorAssertions.swift#L351-L372.
             // We could just cast the closure to be isolated (nothing else does assumeIsolated), however we would not have the
             // same Runtime state as an executing Task that is actor isolated.

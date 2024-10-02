@@ -6,7 +6,10 @@
 // SPDX-License-Identifier: MIT
 //
 
+#if canImport(AccessorySetupKit) && !os(macOS)
 import AccessorySetupKit
+#endif
+import Foundation
 
 
 /// The `ASError` from `AccessorySetupKit` mapped to Swift.
@@ -70,7 +73,9 @@ public enum AccessorySetupKitError {
 extension AccessorySetupKitError: Error {}
 
 
+#if canImport(AccessorySetupKit) && !os(macOS)
 @available(iOS 18, *)
+@available(macCatalyst, unavailable)
 extension AccessorySetupKitError {
     /// Create a new error from an `ASError`.
     /// - Parameter error: The `ASError`.
@@ -115,7 +120,7 @@ extension AccessorySetupKitError {
         }
     }
 }
-
+#endif
 
 extension AccessorySetupKitError: LocalizedError {
     public var errorDescription: String? {

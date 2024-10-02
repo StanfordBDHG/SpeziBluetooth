@@ -105,7 +105,8 @@ extension SpeziBluetooth {
     @available(macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
     public static func assumeIsolated<T: Sendable>(
         _ operation: @SpeziBluetooth () throws -> T,
-        file: StaticString = #fileID, line: UInt = #line
+        file: StaticString = #fileID,
+        line: UInt = #line
     ) rethrows -> T {
         typealias YesActor = @SpeziBluetooth () throws -> T
         typealias NoActor = () throws -> T

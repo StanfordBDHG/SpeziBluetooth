@@ -6,7 +6,9 @@
 // SPDX-License-Identifier: MIT
 //
 
+#if canImport(AccessorySetupKit) && !os(macOS)
 import AccessorySetupKit
+#endif
 import SpeziFoundation
 
 
@@ -260,6 +262,7 @@ extension DiscoveryCriteria {
         )
     }
 
+#if canImport(AccessorySetupKit) && !os(macOS)
     /// Identify an accessory by its service, manufacturer and name with additional options for the AccessorySetupKit.
     /// - Parameters:
     ///   - uuid: The service uuid that the accessory advertises.
@@ -273,6 +276,7 @@ extension DiscoveryCriteria {
     ///   - supportOptions: Additional accessory support options which are used with the AccessorySetupKit.
     /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     @available(iOS 18, *)
+    @available(macCatalyst, unavailable)
     public static func accessory( // swiftlint:disable:this function_default_parameter_at_end
         advertising uuid: BTUUID,
         serviceData: DataDescriptor? = nil,
@@ -304,6 +308,7 @@ extension DiscoveryCriteria {
     ///   - supportOptions: Additional accessory support options which are used with the AccessorySetupKit.
     /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     @available(iOS 18, *)
+    @available(macCatalyst, unavailable)
     public static func accessory(
         advertising uuid: BTUUID,
         serviceData: DataDescriptor? = nil,
@@ -333,6 +338,7 @@ extension DiscoveryCriteria {
     ///   - supportOptions: Additional accessory support options which are used with the AccessorySetupKit.
     /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     @available(iOS 18, *)
+    @available(macCatalyst, unavailable)
     public static func accessory<Service: BluetoothService>( // swiftlint:disable:this function_default_parameter_at_end
         advertising service: Service.Type,
         serviceData: DataDescriptor? = nil,
@@ -364,6 +370,7 @@ extension DiscoveryCriteria {
     ///   - supportOptions: Additional accessory support options which are used with the AccessorySetupKit.
     /// - Returns: The `DiscoveryCriteria` identifying an accessory with the specified criteria.
     @available(iOS 18, *)
+    @available(macCatalyst, unavailable)
     public static func accessory<Service: BluetoothService>(
         advertising service: Service.Type,
         serviceData: DataDescriptor? = nil,
@@ -379,6 +386,7 @@ extension DiscoveryCriteria {
             supportOptions: supportOptions.rawValue
         )
     }
+#endif
 
     /// Identify a device by its manufacturer and advertised services.
     ///

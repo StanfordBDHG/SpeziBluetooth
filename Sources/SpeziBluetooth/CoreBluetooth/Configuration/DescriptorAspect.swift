@@ -6,7 +6,9 @@
 // SPDX-License-Identifier: MIT
 //
 
+#if canImport(AccessorySetupKit) && !os(macOS)
 import AccessorySetupKit
+#endif
 import SpeziFoundation
 
 
@@ -28,7 +30,9 @@ enum DescriptorAspect {
 }
 
 
+#if canImport(AccessorySetupKit) && !os(macOS)
 @available(iOS 18.0, *)
+@available(macCatalyst, unavailable)
 extension DescriptorAspect {
     static func bluetoothRange(_ range: ASDiscoveryDescriptor.Range) -> DescriptorAspect {
         .bluetoothRange(range.rawValue)
@@ -38,6 +42,7 @@ extension DescriptorAspect {
         .supportOptions(options.rawValue)
     }
 }
+#endif
 
 
 extension DescriptorAspect: Sendable, Hashable {}
@@ -106,17 +111,25 @@ extension DescriptorAspect: CustomStringConvertible {
         case let .manufacturer(id, manufacturerData):
             ".manufacturer(\(id)\(manufacturerData.map { ", manufacturerData: \($0.description)" } ?? ""))"
         case let .bluetoothRange(value):
+#if os(iOS) && !targetEnvironment(macCatalyst)
             if #available(iOS 18, *), let range = ASDiscoveryDescriptor.Range(rawValue: value) {
                 ".bluetoothRange(\(range))"
             } else {
                 ".bluetoothRange(rawValue: \(value))"
             }
+#else
+            ".bluetoothRange(rawValue: \(value))"
+#endif
         case let .supportOptions(value):
+#if os(iOS) && !targetEnvironment(macCatalyst)
             if #available(iOS 18, *) {
                 ".supportOptions(\(ASAccessory.SupportOptions(rawValue: value)))"
             } else {
                 ".supportOptions(rawValue: \(value))"
             }
+#else
+            ".supportOptions(rawValue: \(value))"
+#endif
         }
     }
 }

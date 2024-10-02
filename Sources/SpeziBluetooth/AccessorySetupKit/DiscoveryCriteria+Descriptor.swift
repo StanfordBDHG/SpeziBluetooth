@@ -6,10 +6,12 @@
 // SPDX-License-Identifier: MIT
 //
 
+#if canImport(AccessorySetupKit) && !os(macOS)
 import AccessorySetupKit
 
 
 @available(iOS 18.0, *)
+@available(macCatalyst, unavailable)
 extension DiscoveryCriteria {
     /// Retrieve the `ASDiscoveryDescriptor` representation for the discovery criteria.
     public var discoveryDescriptor: ASDiscoveryDescriptor {
@@ -40,3 +42,4 @@ extension DiscoveryCriteria {
         }
     }
 }
+#endif

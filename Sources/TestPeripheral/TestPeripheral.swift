@@ -16,6 +16,9 @@ import SpeziBluetoothServices
 
 @main
 @MainActor
+@available(visionOS, unavailable)
+@available(watchOS, unavailable)
+@available(tvOS, unavailable)
 final class TestPeripheral: NSObject, CBPeripheralManagerDelegate {
     @MainActor
     class QueueUpdates: Sendable {

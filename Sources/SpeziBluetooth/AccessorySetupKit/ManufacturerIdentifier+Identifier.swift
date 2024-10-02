@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
+#if canImport(AccessorySetupKit) && !os(macOS)
 import AccessorySetupKit
 
 
@@ -16,3 +17,4 @@ extension ManufacturerIdentifier {
         ASBluetoothCompanyIdentifier(rawValue)
     }
 }
+#endif

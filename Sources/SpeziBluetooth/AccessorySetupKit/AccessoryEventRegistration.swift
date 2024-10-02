@@ -17,12 +17,14 @@ public struct AccessoryEventRegistration: ~Copyable, Sendable {
     private weak var setupKit: (AnyObject & Sendable)? // type erased as AccessorySetupKit is only available on iOS 18 platform.
 
     @available(iOS 18.0, *)
+    @available(macCatalyst, unavailable)
     init(id: UUID, setupKit: AccessorySetupKit?) {
         self.id = id
         self.setupKit = setupKit
     }
 
     static func cancel(id: UUID, setupKit: (AnyObject & Sendable)?, isolation: isolated (any Actor)? = #isolation) {
+#if os(iOS) && !targetEnvironment(macCatalyst)
         guard #available(iOS 18, *) else {
             return
         }
@@ -40,6 +42,9 @@ public struct AccessoryEventRegistration: ~Copyable, Sendable {
                 _ = typedSetupKit.accessoryChangeHandlers.removeValue(forKey: id)
             }
         }
+#else
+        preconditionFailure("Not available on this platform!")
+#endif
     }
 
     /// Cancel the subscription.

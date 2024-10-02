@@ -6,10 +6,13 @@
 // SPDX-License-Identifier: MIT
 //
 
+#if canImport(AccessorySetupKit) && !os(macOS)
 import AccessorySetupKit
 
 
 @available(iOS 18, *)
+@available(macCatalyst, unavailable)
+@available(visionOS, unavailable)
 extension ASDiscoveryDescriptor.Range: @retroactive CustomStringConvertible, @retroactive CustomDebugStringConvertible {
     public var description: String {
         switch self {
@@ -26,3 +29,4 @@ extension ASDiscoveryDescriptor.Range: @retroactive CustomStringConvertible, @re
         description
     }
 }
+#endif

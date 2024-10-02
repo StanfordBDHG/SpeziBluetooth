@@ -6,11 +6,13 @@
 // SPDX-License-Identifier: MIT
 //
 
+#if canImport(AccessorySetupKit) && !os(macOS)
 import AccessorySetupKit
 import SpeziFoundation
 
 
 @available(iOS 18.0, *)
+@available(macCatalyst, unavailable)
 extension DescriptorAspect {
     func apply(to descriptor: ASDiscoveryDescriptor) {
         switch self {
@@ -75,3 +77,4 @@ extension DataDescriptor {
         self.init(data: dataProperty, mask: maskProperty)
     }
 }
+#endif

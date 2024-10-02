@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
+#if canImport(AccessorySetupKit) && !os(macOS)
 import AccessorySetupKit
 
 
@@ -47,3 +48,4 @@ extension ASAccessoryEventType: @retroactive CustomStringConvertible, @retroacti
         description
     }
 }
+#endif

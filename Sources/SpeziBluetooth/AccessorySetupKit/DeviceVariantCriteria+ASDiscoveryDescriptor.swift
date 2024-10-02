@@ -6,10 +6,12 @@
 // SPDX-License-Identifier: MIT
 //
 
+#if canImport(AccessorySetupKit) && !os(macOS)
 import AccessorySetupKit
 
 
 @available(iOS 18, *)
+@available(macCatalyst, unavailable)
 extension DeviceVariantCriteria {
     /// Apply criteria to a `ASDiscoveryDescriptor`.
     /// - Parameter descriptor: The descriptor.
@@ -28,3 +30,4 @@ extension DeviceVariantCriteria {
         }
     }
 }
+#endif
