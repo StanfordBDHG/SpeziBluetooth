@@ -26,8 +26,8 @@ import Spezi
 /// - ``accessories``
 ///
 /// ### Observe Accessory Changes
-/// - ``accessoryChanges``
 /// - ``AccessoryEvent``
+/// - ``AccessoryChangeHandler``
 ///
 /// ### Displaying an accessory picker
 /// - ``showPicker(for:)``
@@ -47,18 +47,6 @@ import Spezi
 @MainActor
 @available(iOS 18.0, *)
 public final class AccessorySetupKit {
-    /// Accessory-related events.
-    public enum AccessoryEvent {
-        /// The ``AccessorySetupKit/accessories`` property is now available.
-        case available
-        /// New accessory was successfully added.
-        case added(ASAccessory)
-        /// An accessory was removed.
-        case removed(ASAccessory)
-        /// An accessory was changed.
-        case changed(ASAccessory)
-    }
-
     @MainActor
     @Observable
     fileprivate final class State {
@@ -85,21 +73,8 @@ public final class AccessorySetupKit {
         return session.accessories
     }
 
-    private var accessoryChangeSubscriptions: [UUID: AsyncStream<AccessoryEvent>.Continuation] = [:]
-    
-    /// Subscribe to accessory events.
-    public var accessoryChanges: AsyncStream<AccessoryEvent> {
-        AsyncStream { continuation in
-            let id = UUID()
-            accessoryChangeSubscriptions[id] = continuation
-            continuation.onTermination = { [weak self] _ in
-                Task { @MainActor [weak self] in
-                    self?.accessoryChangeSubscriptions.removeValue(forKey: id)
-                }
-            }
-        }
-    }
-    
+    private var accessoryChangeHandlers: [UUID: (AccessoryEvent) -> Void] = [:]
+
     /// Initialize the accessory setup kit.
     public nonisolated init() {}
 
@@ -114,6 +89,15 @@ public final class AccessorySetupKit {
                 self.handleSessionEvent(event: event)
             }
         }
+    }
+    
+    /// Register an event handler for `AccessoryEvent`s.
+    /// - Parameter eventHandler: The event handler that receives the ``AccessoryEvent``s.
+    /// - Returns: Returns a ``EventHandlerRegistration`` that you should keep track of and allows to cancel the event handler.
+    public func registerHandler(eventHandler: @escaping (AccessoryEvent) -> Void) -> EventHandlerRegistration {
+        let id = UUID()
+        accessoryChangeHandlers[id] = eventHandler
+        return EventHandlerRegistration(id: id, setupKit: self)
     }
 
     /// Discover display items in picker.
@@ -196,6 +180,12 @@ public final class AccessorySetupKit {
         }
     }
 
+    private func callHandler(with event: AccessoryEvent) {
+        for handler in accessoryChangeHandlers.values {
+            handler(event)
+        }
+    }
+
     private func handleSessionEvent(event: ASAccessoryEvent) { // swiftlint:disable:this cyclomatic_complexity
         if let accessory = event.accessory {
             logger.debug("Dispatching Accessory Session event \(event.eventType) for accessory \(accessory)")
@@ -205,8 +195,8 @@ public final class AccessorySetupKit {
 
         switch event.eventType {
         case .activated:
-            accessoryChangeSubscriptions.values.forEach { $0.yield(.available) }
             state.withMutation(keyPath: \.accessories) {}
+            callHandler(with: .available)
         case .invalidated:
             break
         case .migrationComplete:
@@ -216,19 +206,19 @@ public final class AccessorySetupKit {
                 return
             }
             state.withMutation(keyPath: \.accessories) {}
-            accessoryChangeSubscriptions.values.forEach { $0.yield(.added(accessory)) }
+            callHandler(with: .added(accessory))
         case .accessoryRemoved:
             guard let accessory = event.accessory else {
                 return
             }
             state.withMutation(keyPath: \.accessories) {}
-            accessoryChangeSubscriptions.values.forEach { $0.yield(.removed(accessory)) }
+            callHandler(with: .removed(accessory))
         case .accessoryChanged:
             guard let accessory = event.accessory else {
                 return
             }
             state.withMutation(keyPath: \.accessories) {}
-            accessoryChangeSubscriptions.values.forEach { $0.yield(.changed(accessory)) }
+            callHandler(with: .changed(accessory))
         case .pickerDidPresent:
             state.pickerPresented = true
         case .pickerDidDismiss:
@@ -246,6 +236,68 @@ public final class AccessorySetupKit {
 
 @available(iOS 18.0, *)
 extension AccessorySetupKit: Module, DefaultInitializable, Sendable {}
+
+
+@available(iOS 18.0, *)
+extension AccessorySetupKit {
+    /// Accessory-related events.
+    public enum AccessoryEvent {
+        /// The ``AccessorySetupKit/accessories`` property is now available.
+        case available
+        /// New accessory was successfully added.
+        case added(ASAccessory)
+        /// An accessory was removed.
+        case removed(ASAccessory)
+        /// An accessory was changed.
+        case changed(ASAccessory)
+    }
+}
+
+
+@available(iOS 18.0, *)
+extension AccessorySetupKit {
+    /// An event handler registration for accessory events.
+    ///
+    /// It automatically cancels the subscription once this value is de-initialized.
+    public struct EventHandlerRegistration: ~Copyable {
+        private let id: UUID
+        private weak var setupKit: AccessorySetupKit?
+
+        fileprivate init(id: UUID, setupKit: AccessorySetupKit?) {
+            self.id = id
+            self.setupKit = setupKit
+        }
+
+        /// Cancel the subscription.
+        /// - Parameter isolation: Inherits the current actor isolation.
+        public func cancel(isolation: isolated (any Actor)? = #isolation) {
+            guard let setupKit else {
+                return
+            }
+            let id = id
+
+            if isolation === MainActor.shared {
+                MainActor.assumeIsolated {
+                    _ = setupKit.accessoryChangeHandlers.removeValue(forKey: id)
+                }
+            } else {
+                Task { @MainActor in
+                    _ = setupKit.accessoryChangeHandlers.removeValue(forKey: id)
+                }
+            }
+        }
+
+        deinit {
+            guard let setupKit else {
+                return
+            }
+            let id = id
+            Task { @MainActor in
+                setupKit.accessoryChangeHandlers.removeValue(forKey: id)
+            }
+        }
+    }
+}
 
 
 @available(iOS 18.0, *)
