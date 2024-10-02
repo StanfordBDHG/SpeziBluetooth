@@ -638,6 +638,8 @@ extension BluetoothManager {
             // same Runtime state as an executing Task that is actor isolated.
             // So whats the solution? We schedule onto a background SerialExecutor (@SpeziBluetooth) so we maintain execution
             // order and make sure to capture all important state before that.
+            //
+            // Note: this is now possible in Swift 6 when running on iOS 18 versions. However, we currently maintain backwards compatibility.
             Task { @SpeziBluetooth [logger] in
                 manager.storage.update(state: state)
                 logger.info("BluetoothManager central state is now \(manager.state)")

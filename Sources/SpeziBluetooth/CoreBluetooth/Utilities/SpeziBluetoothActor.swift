@@ -94,3 +94,30 @@ public actor SpeziBluetooth {
         self.dispatchQueue = serialQueue
     }
 }
+
+
+extension SpeziBluetooth {
+    // starting from iOS onwards, a SerialExecutor executor can implement the `checkIsolated()` method and GCD does that.
+    // therefore we can do the below isolation assumption for the global actor. On prior versions this will fail as the assumeIsolated check
+    // won't succeed.
+    // TODO: would it work anyways (as long as we do not call assert/preconditionIsolated ourselves) as the Swift 5 runtime doesn't crash just on
+    //  calling something with global actor isolation from a different thread?
+    @available(macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
+    public static func assumeIsolated<T: Sendable>(
+        _ operation: @SpeziBluetooth () throws -> T,
+        file: StaticString = #fileID, line: UInt = #line
+    ) rethrows -> T {
+        typealias YesActor = @SpeziBluetooth () throws -> T
+        typealias NoActor = () throws -> T
+
+        guard SpeziBluetooth.shared.isSync else {
+            fatalError("Incorrect actor executor assumption; Expected same executor as \(self).", file: file, line: line)
+        }
+
+        // To do the unsafe cast, we have to pretend it's @escaping.
+        return try withoutActuallyEscaping(operation) { (_ function: @escaping YesActor) throws -> T in
+            let rawFn = unsafeBitCast(function, to: NoActor.self)
+            return try rawFn()
+        }
+    }
+}
