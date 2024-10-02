@@ -9,7 +9,10 @@
 import Foundation
 
 
-public struct StateChangeHandlerRegistration: ~Copyable {
+/// An state change handler registration for the Bluetooth state.
+///
+/// It automatically cancels the subscription once this value is de-initialized.
+public struct StateRegistration: ~Copyable {
     private let id: UUID
     private weak var storage: BluetoothManagerStorage?
 
@@ -28,7 +31,8 @@ public struct StateChangeHandlerRegistration: ~Copyable {
             storage.unsubscribe(for: id)
         }
     }
-
+    
+    /// Cancels the subscription.
     public func cancel() {
         Self.cancel(id: id, storage: storage)
     }
@@ -37,3 +41,6 @@ public struct StateChangeHandlerRegistration: ~Copyable {
         Self.cancel(id: id, storage: storage)
     }
 }
+
+
+extension StateRegistration: Sendable {}

@@ -44,7 +44,7 @@ import Spezi
 /// ### Determine Support
 /// - ``supportedProtocols``
 /// - ``SupportedProtocol``
-@MainActor
+@MainActor // TODO: should this SpeziBluetooth actor?
 @available(iOS 18.0, *)
 public final class AccessorySetupKit {
     @MainActor
@@ -73,7 +73,23 @@ public final class AccessorySetupKit {
         return session.accessories
     }
 
-    private var accessoryChangeHandlers: [UUID: (AccessoryEvent) -> Void] = [:]
+    var accessoryChangeHandlers: [UUID: (AccessoryEvent) -> Void] = [:]
+    private var accessoryChangeSubscriptions: [UUID: AsyncStream<AccessoryEvent>.Continuation] = [:]
+
+    /// Subscribe to accessory events.
+    ///
+    /// - Note: If you need to act on accessory events synchronously, you can register an event handler using ``registerHandler(eventHandler:)``.
+    public var accessoryChanges: AsyncStream<AccessoryEvent> {
+        AsyncStream { continuation in
+            let id = UUID()
+            accessoryChangeSubscriptions[id] = continuation
+            continuation.onTermination = { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    self?.accessoryChangeSubscriptions.removeValue(forKey: id)
+                }
+            }
+        }
+    }
 
     /// Initialize the accessory setup kit.
     public nonisolated init() {}
@@ -93,11 +109,11 @@ public final class AccessorySetupKit {
     
     /// Register an event handler for `AccessoryEvent`s.
     /// - Parameter eventHandler: The event handler that receives the ``AccessoryEvent``s.
-    /// - Returns: Returns a ``EventHandlerRegistration`` that you should keep track of and allows to cancel the event handler.
-    public func registerHandler(eventHandler: @escaping (AccessoryEvent) -> Void) -> EventHandlerRegistration {
+    /// - Returns: Returns a ``AccessoryEventRegistration`` that you should keep track of and allows to cancel the event handler.
+    public func registerHandler(eventHandler: @escaping (AccessoryEvent) -> Void) -> AccessoryEventRegistration {
         let id = UUID()
         accessoryChangeHandlers[id] = eventHandler
-        return EventHandlerRegistration(id: id, setupKit: self)
+        return AccessoryEventRegistration(id: id, setupKit: self)
     }
 
     /// Discover display items in picker.
@@ -181,6 +197,9 @@ public final class AccessorySetupKit {
     }
 
     private func callHandler(with event: AccessoryEvent) {
+        for subscription in accessoryChangeSubscriptions.values {
+            subscription.yield(event)
+        }
         for handler in accessoryChangeHandlers.values {
             handler(event)
         }
@@ -250,52 +269,6 @@ extension AccessorySetupKit {
         case removed(ASAccessory)
         /// An accessory was changed.
         case changed(ASAccessory)
-    }
-}
-
-
-@available(iOS 18.0, *)
-extension AccessorySetupKit {
-    /// An event handler registration for accessory events.
-    ///
-    /// It automatically cancels the subscription once this value is de-initialized.
-    public struct EventHandlerRegistration: ~Copyable { // TODO: just make it a global type?
-        private let id: UUID
-        private weak var setupKit: AccessorySetupKit?
-
-        fileprivate init(id: UUID, setupKit: AccessorySetupKit?) {
-            self.id = id
-            self.setupKit = setupKit
-        }
-
-        /// Cancel the subscription.
-        /// - Parameter isolation: Inherits the current actor isolation.
-        public func cancel(isolation: isolated (any Actor)? = #isolation) {
-            guard let setupKit else {
-                return
-            }
-            let id = id
-
-            if isolation === MainActor.shared {
-                MainActor.assumeIsolated {
-                    _ = setupKit.accessoryChangeHandlers.removeValue(forKey: id)
-                }
-            } else {
-                Task { @MainActor in
-                    _ = setupKit.accessoryChangeHandlers.removeValue(forKey: id)
-                }
-            }
-        }
-
-        deinit {
-            guard let setupKit else {
-                return
-            }
-            let id = id
-            Task { @MainActor in
-                setupKit.accessoryChangeHandlers.removeValue(forKey: id)
-            }
-        }
     }
 }
 

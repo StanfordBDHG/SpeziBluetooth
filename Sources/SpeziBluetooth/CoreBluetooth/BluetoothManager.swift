@@ -231,9 +231,14 @@ public class BluetoothManager: Observable, Sendable, Identifiable { // swiftlint
         keepPoweredOn = false
         checkForCentralDeinit()
     }
-
-    public func registerStateHandler(_ eventHandler: @escaping (BluetoothState) -> Void) -> StateChangeHandlerRegistration {
-        storage.subscribe(eventHandler) // TODO: naming? note to state subscription
+    
+    /// Register a Bluetooth state handler that is synchronously executed.
+    ///
+    /// - Note: Use the ``stateSubscription`` to retrieve an async stream of state subscription.
+    /// - Parameter eventHandler: The event handler closure that is executed synchronously. Do not perform expensive operations within this event handler.
+    /// - Returns: Returns the registration of the state handler.
+    public func registerStateHandler(_ eventHandler: @escaping (BluetoothState) -> Void) -> StateRegistration {
+        storage.subscribe(eventHandler)
     }
 
     /// Scan for nearby bluetooth devices.

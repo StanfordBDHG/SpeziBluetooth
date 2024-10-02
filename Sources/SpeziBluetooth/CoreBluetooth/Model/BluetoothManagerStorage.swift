@@ -120,10 +120,10 @@ final class BluetoothManagerStorage: ValueObservable, Sendable {
     }
 
     @SpeziBluetooth
-    func subscribe(_ handler: @escaping (BluetoothState) -> Void) -> StateChangeHandlerRegistration {
+    func subscribe(_ handler: @escaping (BluetoothState) -> Void) -> StateRegistration {
         let id = UUID()
         subscribedEventHandlers[id] = handler
-        return StateChangeHandlerRegistration(id: id, storage: self)
+        return StateRegistration(id: id, storage: self)
     }
 
     @SpeziBluetooth
