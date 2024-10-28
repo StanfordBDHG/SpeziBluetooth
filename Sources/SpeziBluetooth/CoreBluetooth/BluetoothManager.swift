@@ -109,6 +109,9 @@ public class BluetoothManager: Observable, Sendable, Identifiable { // swiftlint
 
     /// Currently ongoing discovery session.
     private var discoverySession: DiscoverySession?
+    /// The identifier of the last manually disconnected device.
+    /// This is to avoid automatically reconnecting to a device that was manually disconnected.
+    private(set) var lastManuallyDisconnectedDevice: UUID?
 
     /// The list of nearby bluetooth devices.
     ///
@@ -197,6 +200,7 @@ public class BluetoothManager: Observable, Sendable, Identifiable { // swiftlint
     func cleanupCBCentral() {
         _centralManager = nil
         isScanningObserver = nil
+        lastManuallyDisconnectedDevice = nil
         logger.debug("Destroyed the underlying CBCentralManager.")
     }
 
@@ -407,8 +411,6 @@ public class BluetoothManager: Observable, Sendable, Identifiable { // swiftlint
 
         storage.discoveredPeripherals.removeValue(forKey: id)
 
-        discoverySession?.clearManuallyDisconnectedDevice(for: id)
-
         checkForCentralDeinit()
     }
 
@@ -442,8 +444,6 @@ public class BluetoothManager: Observable, Sendable, Identifiable { // swiftlint
     /// This method makes sure that all (weak) references to the de-initialized peripheral are fully cleared.
     func handlePeripheralDeinit(id uuid: UUID) {
         storage.retrievedPeripherals.removeValue(forKey: uuid)
-
-        discoverySession?.clearManuallyDisconnectedDevice(for: uuid)
 
         checkForCentralDeinit()
     }
@@ -488,7 +488,7 @@ public class BluetoothManager: Observable, Sendable, Identifiable { // swiftlint
         // stale timer is handled in the delegate method
         centralManager.cancelPeripheralConnection(peripheral.cbPeripheral)
 
-        discoverySession?.deviceManuallyDisconnected(id: peripheral.id)
+        lastManuallyDisconnectedDevice = peripheral.id
     }
 
     private func handledConnected(device: BluetoothPeripheral) async {

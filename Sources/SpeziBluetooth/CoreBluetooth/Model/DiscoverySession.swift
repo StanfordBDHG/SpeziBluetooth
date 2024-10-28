@@ -100,10 +100,6 @@ class DiscoverySession: Sendable {
 
     private var configuration: BluetoothManagerDiscoveryState
 
-    /// The identifier of the last manually disconnected device.
-    /// This is to avoid automatically reconnecting to a device that was manually disconnected.
-    private(set) var lastManuallyDisconnectedDevice: UUID?
-
     private var autoConnectItem: BluetoothWorkItem?
     private(set) var staleTimer: DiscoveryStaleTimer?
 
@@ -147,16 +143,6 @@ class DiscoverySession: Sendable {
     func isInRange(rssi: NSNumber) -> Bool {
         // rssi of 127 is a magic value signifying unavailability of the value.
         rssi.intValue >= minimumRSSI && rssi.intValue != 127
-    }
-
-    func deviceManuallyDisconnected(id uuid: UUID) {
-        lastManuallyDisconnectedDevice = uuid
-    }
-
-    func clearManuallyDisconnectedDevice(for uuid: UUID) {
-        if lastManuallyDisconnectedDevice == uuid {
-            lastManuallyDisconnectedDevice = nil
-        }
     }
 
     func deviceDiscoveryPostAction(device: BluetoothPeripheral, newlyDiscovered: Bool) {
@@ -204,7 +190,7 @@ extension DiscoverySession {
             return nil // auto-connect is disabled
         }
 
-        guard lastManuallyDisconnectedDevice == nil && !manager.sbHasConnectedDevices else {
+        guard manager.lastManuallyDisconnectedDevice == nil && !manager.sbHasConnectedDevices else {
             return nil
         }
 

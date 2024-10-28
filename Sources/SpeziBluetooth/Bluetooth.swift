@@ -234,7 +234,9 @@ import Spezi
 public final class Bluetooth: Module, EnvironmentAccessible, Sendable {
     @Observable
     class Storage {
-        var nearbyDevices: OrderedDictionary<UUID, any BluetoothDevice> = [:]
+        @MainActor var nearbyDevices: OrderedDictionary<UUID, any BluetoothDevice> = [:]
+
+        nonisolated init() {}
     }
 
     nonisolated static let logger = Logger(subsystem: "edu.stanford.spezi.bluetooth", category: "Bluetooth")

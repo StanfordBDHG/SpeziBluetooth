@@ -13,10 +13,10 @@ import OrderedCollections
 
 @Observable
 final class BluetoothManagerStorage: ValueObservable, Sendable {
-    private let _isScanning = ManagedAtomic<Bool>(false)
-    private let _state = ManagedAtomic<BluetoothState>(.unknown)
+    private let _isScanning = ManagedAtomicMainActorBuffered<Bool>(false)
+    private let _state = ManagedAtomicMainActorBuffered<BluetoothState>(.unknown)
 
-    @ObservationIgnored private nonisolated(unsafe) var _discoveredPeripherals: OrderedDictionary<UUID, BluetoothPeripheral> = [:]
+    private let _discoveredPeripherals: MainActorBuffered<OrderedDictionary<UUID, BluetoothPeripheral>> = .init([:])
     private let rwLock = RWLock()
 
     @SpeziBluetooth var retrievedPeripherals: OrderedDictionary<UUID, WeakReference<BluetoothPeripheral>> = [:] {
@@ -46,9 +46,7 @@ final class BluetoothManagerStorage: ValueObservable, Sendable {
 
     @inlinable var readOnlyDiscoveredPeripherals: OrderedDictionary<UUID, BluetoothPeripheral> {
         access(keyPath: \._discoveredPeripherals)
-        return rwLock.withReadLock {
-            _discoveredPeripherals
-        }
+        return _discoveredPeripherals.load(using: rwLock)
     }
 
     @SpeziBluetooth var state: BluetoothState {
@@ -56,10 +54,13 @@ final class BluetoothManagerStorage: ValueObservable, Sendable {
             readOnlyState
         }
         set {
-            withMutation(keyPath: \._state) {
-                _state.store(newValue, ordering: .relaxed)
+            let didChange = _state.storeAndCompare(newValue) { @Sendable mutation in
+                self.withMutation(keyPath: \._state, mutation)
             }
-            _$simpleRegistrar.triggerDidChange(for: \.state, on: self)
+
+            if didChange {
+                _$simpleRegistrar.triggerDidChange(for: \.state, on: self)
+            }
 
             for continuation in subscribedContinuations.values {
                 continuation.yield(state)
@@ -72,10 +73,13 @@ final class BluetoothManagerStorage: ValueObservable, Sendable {
             readOnlyIsScanning
         }
         set {
-            withMutation(keyPath: \._isScanning) {
-                _isScanning.store(newValue, ordering: .relaxed)
+            let didChange = _isScanning.storeAndCompare(newValue) { @Sendable mutation in
+                self.withMutation(keyPath: \._isScanning, mutation)
             }
-            _$simpleRegistrar.triggerDidChange(for: \.isScanning, on: self) // didSet
+
+            if didChange {
+                _$simpleRegistrar.triggerDidChange(for: \.isScanning, on: self) // didSet
+            }
         }
     }
 
@@ -84,11 +88,10 @@ final class BluetoothManagerStorage: ValueObservable, Sendable {
             readOnlyDiscoveredPeripherals
         }
         set {
-            withMutation(keyPath: \._discoveredPeripherals) {
-                rwLock.withWriteLock {
-                    _discoveredPeripherals = newValue
-                }
+            _discoveredPeripherals.store(newValue, using: rwLock) { @Sendable mutation in
+                self.withMutation(keyPath: \._discoveredPeripherals, mutation)
             }
+
             _$simpleRegistrar.triggerDidChange(for: \.discoveredPeripherals, on: self) // didSet
         }
     }

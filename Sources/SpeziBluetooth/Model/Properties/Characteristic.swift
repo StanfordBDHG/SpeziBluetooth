@@ -226,7 +226,7 @@ public struct Characteristic<Value: Sendable>: Sendable {
             }
         }
 
-        @ObservationIgnored private nonisolated(unsafe) var _value: Value?
+        private let _value: MainActorBuffered<Value?>
         @ObservationIgnored private nonisolated(unsafe) var _capture: CharacteristicCaptureRetrieval?
         // protects both properties above
         private let lock = RWLock()
@@ -241,9 +241,7 @@ public struct Characteristic<Value: Sendable>: Sendable {
 
         @inlinable var readOnlyValue: Value? {
             access(keyPath: \._value)
-            return lock.withReadLock {
-                _value
-            }
+            return _value.load(using: lock)
         }
 
         var capture: GATTCharacteristicCapture? {
@@ -263,15 +261,13 @@ public struct Characteristic<Value: Sendable>: Sendable {
         }
 
         init(initialValue: Value?) {
-            self._value = initialValue
+            self._value = MainActorBuffered(initialValue)
         }
 
         @inlinable
         func inject(_ value: Value?) {
-            withMutation(keyPath: \._value) {
-                lock.withWriteLock {
-                    _value = value
-                }
+            _value.store(value, using: lock) { @Sendable mutation in
+                self.withMutation(keyPath: \._value, mutation)
             }
         }
     }

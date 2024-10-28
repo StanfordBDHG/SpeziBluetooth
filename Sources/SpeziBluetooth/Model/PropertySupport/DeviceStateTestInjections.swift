@@ -12,7 +12,7 @@ import Foundation
 @Observable
 final class DeviceStateTestInjections<Value: Sendable>: Sendable {
     @ObservationIgnored private nonisolated(unsafe) var _subscriptions: ChangeSubscriptions<Value>?
-    @ObservationIgnored private nonisolated(unsafe) var _injectedValue: Value?
+    private let _injectedValue: MainActorBuffered<Value?> = .init(nil)
     private let lock = NSLock() // protects both properties above
 
     var subscriptions: ChangeSubscriptions<Value>? {
@@ -31,15 +31,11 @@ final class DeviceStateTestInjections<Value: Sendable>: Sendable {
     var injectedValue: Value? {
         get {
             access(keyPath: \.injectedValue)
-            return lock.withLock {
-                _injectedValue
-            }
+            return _injectedValue.load(using: lock)
         }
         set {
-            withMutation(keyPath: \.injectedValue) {
-                lock.withLock {
-                    _injectedValue = newValue
-                }
+            _injectedValue.store(newValue, using: lock) { @Sendable mutation in
+                self.withMutation(keyPath: \.injectedValue, mutation)
             }
         }
     }

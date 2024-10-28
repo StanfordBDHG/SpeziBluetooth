@@ -66,7 +66,7 @@ public struct Service<S: BluetoothService> {
             }
         }
 
-        private let _serviceState = ManagedAtomic<ServiceState>(.notPresent)
+        private let _serviceState = ManagedAtomicMainActorBuffered<ServiceState>(.notPresent)
 
         var serviceState: ServiceState {
             get {
@@ -74,8 +74,8 @@ public struct Service<S: BluetoothService> {
                 return _serviceState.load(ordering: .relaxed)
             }
             set {
-                withMutation(keyPath: \.serviceState) {
-                    _serviceState.store(newValue, ordering: .relaxed)
+                _serviceState.store(newValue) { @Sendable mutation in
+                    self.withMutation(keyPath: \.serviceState, mutation)
                 }
             }
         }

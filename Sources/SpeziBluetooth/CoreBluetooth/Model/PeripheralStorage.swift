@@ -16,14 +16,14 @@ import Foundation
 /// into a separate state container that is `@Observable`.
 @Observable
 final class PeripheralStorage: ValueObservable, Sendable {
-    private let _state: ManagedAtomic<PeripheralState>
-    private let _rssi: ManagedAtomic<Int>
-    private let _nearby: ManagedAtomic<Bool>
+    private let _state: ManagedAtomicMainActorBuffered<PeripheralState>
+    private let _rssi: ManagedAtomicMainActorBuffered<Int>
+    private let _nearby: ManagedAtomicMainActorBuffered<Bool>
     private let _lastActivityTimeIntervalSince1970BitPattern: ManagedAtomic<UInt64> // workaround to store store Date atomically
     // swiftlint:disable:previous identifier_name
 
-    @ObservationIgnored private nonisolated(unsafe) var _peripheralName: String?
-    @ObservationIgnored private nonisolated(unsafe) var _advertisementData: AdvertisementData
+    private let _peripheralName: MainActorBuffered<String?>
+    private let _advertisementData: MainActorBuffered<AdvertisementData>
     // Its fine to have a single lock. Readers will be isolated anyways to the SpeziBluetooth global actor.
     // The only side-effect is, that readers will wait for any write to complete, which is fine as peripheralName is rarely updated.
     private let lock = RWLock()
@@ -45,8 +45,9 @@ final class PeripheralStorage: ValueObservable, Sendable {
     @inlinable var name: String? {
         access(keyPath: \._peripheralName)
         access(keyPath: \._advertisementData)
+
         return lock.withReadLock {
-            _peripheralName ?? _advertisementData.localName
+            _peripheralName.loadUnsafe() ?? _advertisementData.loadUnsafe().localName
         }
     }
 
@@ -67,9 +68,7 @@ final class PeripheralStorage: ValueObservable, Sendable {
 
     @inlinable var readOnlyAdvertisementData: AdvertisementData {
         access(keyPath: \._advertisementData)
-        return lock.withReadLock {
-            _advertisementData
-        }
+        return _advertisementData.load(using: lock)
     }
 
     var readOnlyLastActivity: Date {
@@ -80,16 +79,11 @@ final class PeripheralStorage: ValueObservable, Sendable {
     @SpeziBluetooth var peripheralName: String? {
         get {
             access(keyPath: \._peripheralName)
-            return lock.withReadLock {
-                _peripheralName
-            }
+            return _peripheralName.load(using: lock)
         }
         set {
-            let didChange = newValue != _peripheralName
-            withMutation(keyPath: \._peripheralName) {
-                lock.withWriteLock {
-                    _peripheralName = newValue
-                }
+            let didChange = _peripheralName.storeAndCompare(newValue, using: lock) { @Sendable mutation in
+                self.withMutation(keyPath: \._peripheralName, mutation)
             }
 
             if didChange {
@@ -103,9 +97,8 @@ final class PeripheralStorage: ValueObservable, Sendable {
             readOnlyRssi
         }
         set {
-            let didChange = newValue != readOnlyRssi
-            withMutation(keyPath: \._rssi) {
-                _rssi.store(newValue, ordering: .relaxed)
+            let didChange = _rssi.storeAndCompare(newValue) { @Sendable mutation in
+                self.withMutation(keyPath: \._rssi, mutation)
             }
             if didChange {
                 _$simpleRegistrar.triggerDidChange(for: \.rssi, on: self)
@@ -118,11 +111,8 @@ final class PeripheralStorage: ValueObservable, Sendable {
             readOnlyAdvertisementData
         }
         set {
-            let didChange = newValue != _advertisementData
-            withMutation(keyPath: \._advertisementData) {
-                lock.withWriteLock {
-                    _advertisementData = newValue
-                }
+            let didChange = _advertisementData.storeAndCompare(newValue, using: lock) { @Sendable mutation in
+                self.withMutation(keyPath: \._advertisementData, mutation)
             }
 
             if didChange {
@@ -136,10 +126,10 @@ final class PeripheralStorage: ValueObservable, Sendable {
             readOnlyState
         }
         set {
-            let didChange = newValue != readOnlyState
-            withMutation(keyPath: \._state) {
-                _state.store(newValue, ordering: .relaxed)
+            let didChange = _state.storeAndCompare(newValue) { @Sendable mutation in
+                self.withMutation(keyPath: \._state, mutation)
             }
+
             if didChange {
                 _$simpleRegistrar.triggerDidChange(for: \.state, on: self)
             }
@@ -151,9 +141,8 @@ final class PeripheralStorage: ValueObservable, Sendable {
             readOnlyNearby
         }
         set {
-            let didChange = newValue != readOnlyNearby
-            withMutation(keyPath: \._nearby) {
-                _nearby.store(newValue, ordering: .relaxed)
+            let didChange = _nearby.storeAndCompare(newValue) { @Sendable mutation in
+                self.withMutation(keyPath: \._nearby, mutation)
             }
 
             if didChange {
@@ -166,11 +155,11 @@ final class PeripheralStorage: ValueObservable, Sendable {
     @ObservationIgnored let _$simpleRegistrar = ValueObservationRegistrar<PeripheralStorage>()
 
     init(peripheralName: String?, rssi: Int, advertisementData: AdvertisementData, state: PeripheralState, lastActivity: Date = .now) {
-        self._peripheralName = peripheralName
-        self._advertisementData = advertisementData
-        self._rssi = ManagedAtomic(rssi)
-        self._state = ManagedAtomic(state)
-        self._nearby = ManagedAtomic(false)
+        self._peripheralName = MainActorBuffered(peripheralName)
+        self._advertisementData = MainActorBuffered(advertisementData)
+        self._rssi = ManagedAtomicMainActorBuffered(rssi)
+        self._state = ManagedAtomicMainActorBuffered(state)
+        self._nearby = ManagedAtomicMainActorBuffered(false)
         self._lastActivity = lastActivity
         self._lastActivityTimeIntervalSince1970BitPattern = ManagedAtomic(lastActivity.timeIntervalSince1970.bitPattern)
     }
