@@ -2,9 +2,9 @@
 
 //
 // This source file is part of the Stanford Spezi open source project
-// 
+//
 // SPDX-FileCopyrightText: 2022 Stanford University and the project authors (see CONTRIBUTORS.md)
-// 
+//
 // SPDX-License-Identifier: MIT
 //
 
@@ -28,9 +28,9 @@ let package = Package(
         .library(name: "SpeziBluetooth", targets: ["SpeziBluetooth"])
     ],
     dependencies: [
-        .package(url: "https://github.com/StanfordSpezi/SpeziFoundation.git", branch: "feature/concurrency-infrastructure"),
-        .package(url: "https://github.com/StanfordSpezi/Spezi.git", from: "1.7.1"),
-        .package(url: "https://github.com/StanfordSpezi/SpeziViews.git", branch: "feature/additional-infrastructure"),
+        .package(url: "https://github.com/StanfordSpezi/SpeziFoundation.git", from: "2.0.0"),
+        .package(url: "https://github.com/StanfordSpezi/Spezi.git", from: "1.8.0"),
+        .package(url: "https://github.com/StanfordSpezi/SpeziViews.git", from: "1.7.0"),
         .package(url: "https://github.com/StanfordSpezi/SpeziNetworking.git", from: "2.1.0"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.59.0"),
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.0.4"),

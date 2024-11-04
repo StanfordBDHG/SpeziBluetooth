@@ -72,7 +72,7 @@ public final class AccessorySetupKit {
         state.pickerPresented
     }
 
-#if canImport(AccessorySetupKit) && !targetEnvironment(macCatalyst)  && !os(macOS)
+#if canImport(AccessorySetupKit) && !targetEnvironment(macCatalyst) && !os(macOS)
     /// Previously selected accessories for this application.
     @available(macCatalyst, unavailable)
     public var accessories: [ASAccessory] {
@@ -106,7 +106,7 @@ public final class AccessorySetupKit {
     /// Configure the Module.
     @_documentation(visibility: internal)
     public func configure() {
-#if canImport(AccessorySetupKit) && !targetEnvironment(macCatalyst)  && !os(macOS)
+#if canImport(AccessorySetupKit) && !targetEnvironment(macCatalyst) && !os(macOS)
         self.session.activate(on: DispatchQueue.main) { [weak self] event in
             guard let self else {
                 return

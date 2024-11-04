@@ -89,6 +89,7 @@ public actor SpeziBluetooth {
             preconditionFailure("Dispatch queue \(dispatchQueue.label) was not initialized to be serial!")
         }
 
+        // TODO: use // TODO: dispatchPrecondition(condition: .onQueue(.))
         serialQueue.setSpecific(key: SpeziBluetoothDispatchQueueKey.key, value: SpeziBluetoothDispatchQueueKey.shared)
 
         self.dispatchQueue = serialQueue
@@ -111,6 +112,7 @@ extension SpeziBluetooth {
         typealias YesActor = @SpeziBluetooth () throws -> T
         typealias NoActor = () throws -> T
 
+        // TODO: dispatchPrecondition(condition: .onQueue(SpeziBluetooth.shared.dispatchQueue))
         guard SpeziBluetooth.shared.isSync else {
             fatalError("Incorrect actor executor assumption; Expected same executor as \(self).", file: file, line: line)
         }
