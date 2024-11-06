@@ -214,7 +214,7 @@ public class BluetoothPeripheral { // swiftlint:disable:this type_body_length
     /// Disconnect the ongoing connection to the peripheral.
     ///
     /// Cancels an active or pending connection to a peripheral.
-    @available(*, deprecated, message: "Please migrate to the async throwing version of disconnect().")
+    @available(*, deprecated, message: "Please migrate to the async version of disconnect().")
     @_documentation(visibility: internal)
     public func disconnect() {
         Task {
