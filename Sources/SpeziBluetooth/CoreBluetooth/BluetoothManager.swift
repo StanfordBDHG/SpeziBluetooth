@@ -342,7 +342,6 @@ public class BluetoothManager: Observable, Sendable, Identifiable { // swiftlint
 
     private func handlePoweredOff() {
         for peripheral in knownPeripherals.values {
-            // TODO: verify correct implementation
             discardDevice(device: peripheral, error: CancellationError())
         }
     }

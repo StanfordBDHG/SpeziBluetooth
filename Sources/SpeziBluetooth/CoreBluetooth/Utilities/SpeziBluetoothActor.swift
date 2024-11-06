@@ -9,13 +9,6 @@
 import Foundation
 
 
-private struct SpeziBluetoothDispatchQueueKey: Sendable, Hashable {
-    static let shared = SpeziBluetoothDispatchQueueKey()
-    static let key = DispatchSpecificKey<Self>()
-    private init() {}
-}
-
-
 /// A lot of the CB objects are not sendable. This is fine.
 /// However, Swift is not smart enough to know that CB delegate methods (e.g., CBCentralManagerDelete or the CBPeripheralDelegate) are called
 /// on the SpeziBluetooth actor's dispatch queue and therefore are never sent over actor boundaries.
@@ -28,9 +21,7 @@ struct CBInstance<Value>: Sendable {
     }
 
     init(instantiatedOnDispatchQueue object: Value, file: StaticString = #fileID, line: UInt = #line) {
-        guard SpeziBluetooth.shared.isSync else {
-            fatalError("Incorrect actor executor assumption; Expected same executor as \(SpeziBluetooth.shared).", file: file, line: line)
-        }
+        dispatchPrecondition(condition: .onQueue(SpeziBluetooth.shared.dispatchQueue))
 
         self.object = object
     }
@@ -79,18 +70,11 @@ public actor SpeziBluetooth {
         dispatchQueue.asUnownedSerialExecutor()
     }
 
-    nonisolated var isSync: Bool {
-        DispatchQueue.getSpecific(key: SpeziBluetoothDispatchQueueKey.key) == SpeziBluetoothDispatchQueueKey.shared
-    }
-
     private init() {
         let dispatchQueue = DispatchQueue(label: "edu.stanford.spezi.bluetooth", qos: .userInitiated)
         guard let serialQueue = dispatchQueue as? DispatchSerialQueue else {
             preconditionFailure("Dispatch queue \(dispatchQueue.label) was not initialized to be serial!")
         }
-
-        // TODO: use // TODO: dispatchPrecondition(condition: .onQueue(.))
-        serialQueue.setSpecific(key: SpeziBluetoothDispatchQueueKey.key, value: SpeziBluetoothDispatchQueueKey.shared)
 
         self.dispatchQueue = serialQueue
     }
@@ -98,24 +82,28 @@ public actor SpeziBluetooth {
 
 
 extension SpeziBluetooth {
-    // starting from iOS onwards, a SerialExecutor executor can implement the `checkIsolated()` method and GCD does that.
-    // therefore we can do the below isolation assumption for the global actor. On prior versions this will fail as the assumeIsolated check
-    // won't succeed.
-    // TODO: would it work anyways (as long as we do not call assert/preconditionIsolated ourselves) as the Swift 5 runtime doesn't crash just on
-    //  calling something with global actor isolation from a different thread?
+    /// Assume isolation to the global `SpeziBluetooth` actor.
+    /// - Parameters:
+    ///   - operation: The operation that should be executed with assumed isolation.
+    ///   - file: The file in which this method is called.
+    ///   - line: The line in which this method is called.
+    /// - Returns: Returns `T` from the `operation`.
     @available(macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
     public static func assumeIsolated<T: Sendable>(
         _ operation: @SpeziBluetooth () throws -> T,
         file: StaticString = #fileID,
         line: UInt = #line
     ) rethrows -> T {
+        // Starting from iOS 18 onwards, a `SerialExecutor` executor can implement the `checkIsolated()` method and GCD does that.
+        // Therefore, we can do the below isolation assumption for the global actor. On prior versions this will fail as the assumeIsolated check
+        // won't succeed.
+        // So, this is just available when running with Swift 6 runtime for now. On Swift 5 runtimes this won't fail as long as you do not call
+        // a `assumeIsolated` or similar within the `operation`. However, we want to be save for now.
+
         typealias YesActor = @SpeziBluetooth () throws -> T
         typealias NoActor = () throws -> T
 
-        // TODO: dispatchPrecondition(condition: .onQueue(SpeziBluetooth.shared.dispatchQueue))
-        guard SpeziBluetooth.shared.isSync else {
-            fatalError("Incorrect actor executor assumption; Expected same executor as \(self).", file: file, line: line)
-        }
+        dispatchPrecondition(condition: .onQueue(SpeziBluetooth.shared.dispatchQueue))
 
         // To do the unsafe cast, we have to pretend it's @escaping.
         return try withoutActuallyEscaping(operation) { (_ function: @escaping YesActor) throws -> T in

@@ -33,15 +33,7 @@ public struct AccessoryEventRegistration: ~Copyable, Sendable {
             return
         }
 
-        if isolation === MainActor.shared {
-            MainActor.assumeIsolated {
-                _ = typedSetupKit.accessoryChangeHandlers.removeValue(forKey: id)
-            }
-        } else {
-            Task { @MainActor in
-                _ = typedSetupKit.accessoryChangeHandlers.removeValue(forKey: id)
-            }
-        }
+        typedSetupKit.cancelHandler(for: id)
 #else
         preconditionFailure("Not available on this platform!")
 #endif

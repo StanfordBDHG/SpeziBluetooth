@@ -47,13 +47,14 @@ import Spezi
 /// ### Determine Support
 /// - ``supportedProtocols``
 /// - ``SupportedProtocol``
-@MainActor // TODO: should this SpeziBluetooth actor?
+@SpeziBluetooth
 @available(iOS 18.0, *)
 public final class AccessorySetupKit {
     @MainActor
     @Observable
     fileprivate final class State {
         var pickerPresented = false
+
         let accessories: Void = ()
 
         nonisolated init() {}
@@ -68,7 +69,7 @@ public final class AccessorySetupKit {
     private let state = State()
 
     /// Determine if the accessory picker is currently being presented.
-    public var pickerPresented: Bool {
+    @MainActor public var pickerPresented: Bool {
         state.pickerPresented
     }
 
@@ -80,20 +81,28 @@ public final class AccessorySetupKit {
         return session.accessories
     }
 
-    var accessoryChangeHandlers: [UUID: (AccessoryEvent) -> Void] = [:]
-    private var accessoryChangeSubscriptions: [UUID: AsyncStream<AccessoryEvent>.Continuation] = [:]
+    private nonisolated(unsafe) var accessoryChangeHandlers: [UUID: @SpeziBluetooth (AccessoryEvent) -> Void] = [:]
+    private nonisolated(unsafe) var accessoryChangeSubscriptions: [UUID: AsyncStream<AccessoryEvent>.Continuation] = [:]
+    private let subscriptionLock = NSLock()
 
     /// Subscribe to accessory events.
     ///
     /// - Note: If you need to act on accessory events synchronously, you can register an event handler using ``registerHandler(eventHandler:)``.
     @available(macCatalyst, unavailable)
-    public var accessoryChanges: AsyncStream<AccessoryEvent> {
+    public nonisolated var accessoryChanges: AsyncStream<AccessoryEvent> {
         AsyncStream { continuation in
             let id = UUID()
-            accessoryChangeSubscriptions[id] = continuation
+
+            subscriptionLock.withLock {
+                accessoryChangeSubscriptions[id] = continuation
+            }
+
             continuation.onTermination = { [weak self] _ in
-                Task { @MainActor [weak self] in
-                    self?.accessoryChangeSubscriptions.removeValue(forKey: id)
+                guard let self else {
+                    return
+                }
+                subscriptionLock.withLock {
+                    _ = self.accessoryChangeSubscriptions.removeValue(forKey: id)
                 }
             }
         }
@@ -105,17 +114,20 @@ public final class AccessorySetupKit {
 
     /// Configure the Module.
     @_documentation(visibility: internal)
+    @MainActor
     public func configure() {
+        Task { @SpeziBluetooth in
 #if canImport(AccessorySetupKit) && !targetEnvironment(macCatalyst) && !os(macOS)
-        self.session.activate(on: DispatchQueue.main) { [weak self] event in
-            guard let self else {
-                return
+            self.session.activate(on: SpeziBluetooth.shared.dispatchQueue) { [weak self] event in
+                guard let self else {
+                    return
+                }
+                SpeziBluetooth.assumeIsolated {
+                    self.handleSessionEvent(event: event)
+                }
             }
-            MainActor.assumeIsolated {
-                self.handleSessionEvent(event: event)
-            }
-        }
 #endif
+        }
     }
 
 
@@ -127,14 +139,22 @@ public final class AccessorySetupKit {
     @available(watchOS, unavailable)
     @available(macOS, unavailable)
     @available(macCatalyst, unavailable)
-    public func registerHandler(eventHandler: @escaping (AccessoryEvent) -> Void) -> AccessoryEventRegistration {
+    public nonisolated func registerHandler(eventHandler: @SpeziBluetooth @escaping (AccessoryEvent) -> Void) -> AccessoryEventRegistration {
 #if canImport(AccessorySetupKit) && !targetEnvironment(macCatalyst) && !os(macOS)
         let id = UUID()
-        accessoryChangeHandlers[id] = eventHandler
+        subscriptionLock.withLock {
+            accessoryChangeHandlers[id] = eventHandler
+        }
         return AccessoryEventRegistration(id: id, setupKit: self)
 #else
         preconditionFailure("\(#function) is unavailable on this platform.")
 #endif
+    }
+
+    nonisolated func cancelHandler(for id: UUID) {
+        subscriptionLock.withLock {
+            _ = accessoryChangeHandlers.removeValue(forKey: id)
+        }
     }
 
 #if canImport(AccessorySetupKit) && !targetEnvironment(macCatalyst) && !os(macOS)
@@ -224,10 +244,15 @@ public final class AccessorySetupKit {
     }
 
     private func callHandler(with event: AccessoryEvent) {
-        for subscription in accessoryChangeSubscriptions.values {
+        let (subscriptions, handlers) = subscriptionLock.withLock {
+            (Array(accessoryChangeSubscriptions.values), Array(accessoryChangeHandlers.values))
+        }
+
+        for subscription in subscriptions {
             subscription.yield(event)
         }
-        for handler in accessoryChangeHandlers.values {
+
+        for handler in handlers {
             handler(event)
         }
     }
@@ -266,9 +291,13 @@ public final class AccessorySetupKit {
             state.withMutation(keyPath: \.accessories) {}
             callHandler(with: .changed(accessory))
         case .pickerDidPresent:
-            state.pickerPresented = true
+            Task { @MainActor in
+                state.pickerPresented = true
+            }
         case .pickerDidDismiss:
-            state.pickerPresented = false
+            Task { @MainActor in
+                state.pickerPresented = false
+            }
         case .pickerSetupBridging, .pickerSetupFailed, .pickerSetupPairing, .pickerSetupRename:
             break
         case .unknown:
