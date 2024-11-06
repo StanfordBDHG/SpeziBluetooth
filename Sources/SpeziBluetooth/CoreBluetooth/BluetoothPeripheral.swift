@@ -238,6 +238,11 @@ public class BluetoothPeripheral { // swiftlint:disable:this type_body_length
             return
         }
 
+        if case .disconnected = state {
+            manager.disconnect(peripheral: self) // just be save and call it anyways
+            return // the delegate will not be called if already disconnected
+        }
+
         do {
             try await disconnectAccess.perform {
                 manager.disconnect(peripheral: self)
