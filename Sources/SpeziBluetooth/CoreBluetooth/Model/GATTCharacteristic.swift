@@ -11,6 +11,17 @@ import Foundation
 import SpeziFoundation
 
 
+struct CharacteristicAccessorCapture: Sendable {
+    let isNotifying: Bool
+    let properties: CBCharacteristicProperties
+
+    fileprivate init(isNotifying: Bool, properties: CBCharacteristicProperties) {
+        self.isNotifying = isNotifying
+        self.properties = properties
+    }
+}
+
+
 struct GATTCharacteristicCapture: Sendable {
     let isNotifying: Bool
     let value: Data?
@@ -70,9 +81,10 @@ public final class GATTCharacteristic {
 
     private let captureLock = RWLock()
 
-    var captured: GATTCharacteristicCapture {
-        captureLock.withReadLock {
-            GATTCharacteristicCapture(from: self)
+    var captured: CharacteristicAccessorCapture {
+        access(keyPath: \.captured)
+        return captureLock.withReadLock {
+            CharacteristicAccessorCapture(isNotifying: _isNotifying, properties: properties)
         }
     }
 
@@ -87,7 +99,10 @@ public final class GATTCharacteristic {
 
     @SpeziBluetooth
     func synchronizeModel(capture: GATTCharacteristicCapture) {
+        var shouldNotifyCapture = false
+
         if capture.isNotifying != isNotifying {
+            shouldNotifyCapture = true
             withMutation(keyPath: \.isNotifying) {
                 captureLock.withWriteLock {
                     _isNotifying = capture.isNotifying
@@ -106,6 +121,12 @@ public final class GATTCharacteristic {
                 captureLock.withWriteLock {
                     _descriptors = capture.descriptors?.cbObject
                 }
+            }
+        }
+
+        if shouldNotifyCapture {
+            Task { @MainActor in
+                self.withMutation(keyPath: \.captured) {}
             }
         }
     }

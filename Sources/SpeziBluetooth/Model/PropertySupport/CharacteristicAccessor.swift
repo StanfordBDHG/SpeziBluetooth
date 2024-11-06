@@ -46,7 +46,7 @@ import CoreBluetooth
 /// - ``sendRequest(_:timeout:)``
 public struct CharacteristicAccessor<Value: Sendable> {
     private let storage: Characteristic<Value>.Storage
-    private let capturedCharacteristic: GATTCharacteristicCapture?
+    private let capturedCharacteristic: CharacteristicAccessorCapture?
 
 
     init(

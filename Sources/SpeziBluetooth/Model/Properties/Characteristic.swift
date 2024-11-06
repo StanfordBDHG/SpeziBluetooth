@@ -218,7 +218,7 @@ public struct Characteristic<Value: Sendable>: Sendable {
         struct CharacteristicCaptureRetrieval: Sendable { // workaround to make the retrieval of the `capture` property Sendable
             private nonisolated(unsafe) let characteristic: GATTCharacteristic
 
-            var capture: GATTCharacteristicCapture {
+            var capture: CharacteristicAccessorCapture {
                 characteristic.captured
             }
 
@@ -245,7 +245,7 @@ public struct Characteristic<Value: Sendable>: Sendable {
             return _value.load(using: lock)
         }
 
-        var capture: GATTCharacteristicCapture? {
+        var capture: CharacteristicAccessorCapture? {
             let characteristic = lock.withReadLock {
                 _capture
             }

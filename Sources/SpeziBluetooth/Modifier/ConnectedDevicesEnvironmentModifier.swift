@@ -25,11 +25,9 @@ private struct ConnectedDeviceEnvironmentModifier<Device: BluetoothDevice>: View
             device as? Device
         }
 
-        let _ = devicesList.devices = connectedDevicesList // swiftlint:disable:this redundant_discardable_let
-
         content
             .environment(firstConnectedDevice)
-            .environment(devicesList)
+            .environment(ConnectedDevices(connectedDevicesList))
     }
 }
 
