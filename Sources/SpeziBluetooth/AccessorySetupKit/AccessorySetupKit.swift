@@ -152,9 +152,11 @@ public final class AccessorySetupKit {
     }
 
     nonisolated func cancelHandler(for id: UUID) {
+#if canImport(AccessorySetupKit) && !targetEnvironment(macCatalyst) && !os(macOS)
         subscriptionLock.withLock {
             _ = accessoryChangeHandlers.removeValue(forKey: id)
         }
+#endif
     }
 
 #if canImport(AccessorySetupKit) && !targetEnvironment(macCatalyst) && !os(macOS)

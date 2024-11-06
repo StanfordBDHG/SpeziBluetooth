@@ -275,3 +275,29 @@ final class TestPeripheral: NSObject, CBPeripheralManagerDelegate {
         peripheral.respond(to: first, withResult: .success)
     }
 }
+
+
+extension CBManagerState: @retroactive CustomStringConvertible, @retroactive CustomDebugStringConvertible {
+    public var description: String {
+        switch self {
+        case .unknown:
+            "unknown"
+        case .resetting:
+            "resetting"
+        case .unsupported:
+            "unsupported"
+        case .unauthorized:
+            "unauthorized"
+        case .poweredOff:
+            "poweredOff"
+        case .poweredOn:
+            "poweredOn"
+        @unknown default:
+            "CBManagerState(rawValue: \(rawValue))"
+        }
+    }
+
+    public var debugDescription: String {
+        description
+    }
+}
