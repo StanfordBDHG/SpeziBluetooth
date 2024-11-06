@@ -639,7 +639,7 @@ extension BluetoothManager {
             // order and make sure to capture all important state before that.
             //
             // Note: this is now possible in Swift 6 when running on iOS 18 versions. However, we currently maintain backwards compatibility.
-            Task { @SpeziBluetooth [logger] in
+            SpeziBluetooth.assumeIsolatedIfAvailableOrTask { [logger] in
                 manager.storage.update(state: state)
                 logger.info("BluetoothManager central state is now \(manager.state)")
 
@@ -679,7 +679,7 @@ extension BluetoothManager {
 
             let peripheral = CBInstance(instantiatedOnDispatchQueue: peripheral)
 
-            Task { @SpeziBluetooth [logger, data] in
+            SpeziBluetooth.assumeIsolatedIfAvailableOrTask { [logger, data] in
                 guard let session = manager.discoverySession,
                       manager.isScanning else {
                     return
@@ -730,7 +730,7 @@ extension BluetoothManager {
             }
 
             let peripheral = CBInstance(instantiatedOnDispatchQueue: peripheral)
-            Task { @SpeziBluetooth [logger] in
+            SpeziBluetooth.assumeIsolatedIfAvailableOrTask { [logger] in
                 guard let device = manager.knownPeripheral(for: peripheral.identifier) else {
                     logger.error("Received didConnect for unknown peripheral \(peripheral.debugIdentifier). Cancelling connection ...")
                     manager.centralManager.cancelPeripheralConnection(peripheral.cbObject)
@@ -738,9 +738,11 @@ extension BluetoothManager {
                 }
 
                 logger.debug("Peripheral \(device) connected.")
-                await manager.storage.cbDelegateSignal(connected: true, for: peripheral.identifier)
+                manager.storage.cbDelegateSignal(connected: true, for: peripheral.identifier)
 
-                await manager.handledConnected(device: device)
+                Task { @SpeziBluetooth in
+                    await manager.handledConnected(device: device)
+                }
             }
         }
 
@@ -754,7 +756,7 @@ extension BluetoothManager {
 
             let peripheral = CBInstance(instantiatedOnDispatchQueue: peripheral)
 
-            Task { @SpeziBluetooth [logger] in
+            SpeziBluetooth.assumeIsolatedIfAvailableOrTask { [logger] in
                 guard let device = manager.knownPeripheral(for: peripheral.identifier) else {
                     logger.warning("Unknown peripheral \(peripheral.debugIdentifier) failed with error: \(String(describing: error))")
                     manager.centralManager.cancelPeripheralConnection(peripheral.cbObject)
@@ -781,7 +783,7 @@ extension BluetoothManager {
             }
 
             let peripheral = CBInstance(instantiatedOnDispatchQueue: peripheral)
-            Task { @SpeziBluetooth [logger] in
+            SpeziBluetooth.assumeIsolatedIfAvailableOrTask { [logger] in
                 guard let device = manager.knownPeripheral(for: peripheral.identifier) else {
                     logger.error("Received didDisconnect for unknown peripheral \(peripheral.debugIdentifier).")
                     return
@@ -794,7 +796,7 @@ extension BluetoothManager {
                 }
 
                 manager.discardDevice(device: device, error: error)
-                await manager.storage.cbDelegateSignal(connected: false, for: peripheral.identifier)
+                manager.storage.cbDelegateSignal(connected: false, for: peripheral.identifier)
             }
         }
     }

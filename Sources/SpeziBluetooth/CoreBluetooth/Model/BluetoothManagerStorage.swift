@@ -133,18 +133,19 @@ final class BluetoothManagerStorage: ValueObservable, Sendable {
     }
 
     @SpeziBluetooth
-    func cbDelegateSignal(connected: Bool, for id: UUID) async {
+    func cbDelegateSignal(connected: Bool, for id: UUID) {
         if connected {
             connectedDevices.insert(id)
         } else {
             connectedDevices.remove(id)
         }
-        await updateMainActorConnectedDevices(hasConnectedDevices: !connectedDevices.isEmpty)
+        updateMainActorConnectedDevices(hasConnectedDevices: !connectedDevices.isEmpty)
     }
 
-    @MainActor
     private func updateMainActorConnectedDevices(hasConnectedDevices: Bool) {
-        maHasConnectedDevices = hasConnectedDevices
+        Task { @MainActor in
+            maHasConnectedDevices = hasConnectedDevices
+        }
     }
 
 

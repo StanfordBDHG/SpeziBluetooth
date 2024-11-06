@@ -48,10 +48,8 @@ final class ChangeSubscriptions<Value: Sendable>: Sendable {
                     return
                 }
 
-                Task { @SpeziBluetooth in
-                    self.lock.withWriteLock {
-                        self.continuations.removeValue(forKey: id)
-                    }
+                self.lock.withWriteLock {
+                    _ = self.continuations.removeValue(forKey: id)
                 }
             }
         }
