@@ -28,10 +28,6 @@ import Spezi
 /// ### Discovered Accessories
 /// - ``accessories``
 ///
-/// ### Observe Accessory Changes
-/// - ``AccessoryEvent``
-/// - ``AccessoryChangeHandler``
-///
 /// ### Displaying an accessory picker
 /// - ``showPicker(for:)``
 /// - ``pickerPresented``

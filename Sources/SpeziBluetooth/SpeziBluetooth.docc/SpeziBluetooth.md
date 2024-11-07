@@ -289,32 +289,11 @@ due to their async nature.
 - ``DeviceState``
 - ``DeviceAction``
 
-### AccessorySetupKit Integration
-
-- ``AccessorySetupKit-swift.class``
-- ``AccessorySetupKitError``
-
 ### Concurrency
 
 - ``SpeziBluetooth/SpeziBluetooth``
 
-### Core Bluetooth 
+### Frameworks
 
-- ``BluetoothManager``
-- ``BluetoothPeripheral``
-- ``GATTService``
-- ``GATTCharacteristic``
-- ``BluetoothState``
-- ``PeripheralState``
-- ``BluetoothError``
-- ``AdvertisementData``
-- ``ManufacturerIdentifier``
-- ``WriteType``
-- ``BTUUID``
-
-### Configuring Core Bluetooth
-
-- ``DiscoveryDescription``
-- ``DeviceDescription``
-- ``ServiceDescription``
-- ``CharacteristicDescription``
+- <doc:CoreBluetooth-Framework>
+- <doc:AccessorySetupKit-Framework>

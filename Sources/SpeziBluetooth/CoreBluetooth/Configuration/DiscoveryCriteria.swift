@@ -43,10 +43,6 @@ import SpeziFoundation
 /// - ``accessory(manufacturer:manufacturerData:nameSubstring:advertising:)-5xdh2``
 /// - ``accessory(manufacturer:manufacturerData:nameSubstring:advertising:)-1j9zn``
 /// - ``accessory(manufacturer:manufacturerData:nameSubstring:advertising:_:)``
-///
-/// ### AccessorySetupKit
-/// - ``discoveryDescriptor``
-/// - ``matches(descriptor:)``
 public struct DiscoveryCriteria {
     let aspects: [DescriptorAspect]
 

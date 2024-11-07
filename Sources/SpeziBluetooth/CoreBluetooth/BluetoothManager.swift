@@ -65,6 +65,7 @@ import OSLog
 /// - ``state``
 /// - ``isScanning``
 /// - ``stateSubscription``
+/// - ``StateRegistration``
 ///
 /// ### Discovering nearby Peripherals
 /// - ``nearbyPeripherals``
