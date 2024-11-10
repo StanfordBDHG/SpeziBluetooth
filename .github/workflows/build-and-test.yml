@@ -66,7 +66,7 @@ jobs:
     secrets: inherit
   uploadcoveragereport:
     name: Upload Coverage Report
-    needs: [package_ios, buildandtest_visionos, buildandtest_watchos, buildandtest_tvos, ios, macos]
+    needs: [package_ios, buildandtest_visionos, buildandtest_watchos, ios, macos]
     uses: StanfordSpezi/.github/.github/workflows/create-and-upload-coverage-report.yml@v2
     with:
       coveragereports: SpeziBluetooth-iOS.xcresult SpeziBluetooth-visionOS.xcresult SpeziBluetooth-watchOS.xcresult TestApp-iOS.xcresult TestApp-macOS.xcresult
