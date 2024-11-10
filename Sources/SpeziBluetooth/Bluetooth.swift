@@ -241,7 +241,7 @@ public final class Bluetooth: Module, EnvironmentAccessible, @unchecked Sendable
 
     nonisolated static let logger = Logger(subsystem: "edu.stanford.spezi.bluetooth", category: "Bluetooth")
 
-    @SpeziBluetooth private let bluetoothManager = BluetoothManager()
+    private let bluetoothManager = BluetoothManager()
 
     /// The Bluetooth device configuration.
     ///
@@ -249,9 +249,9 @@ public final class Bluetooth: Module, EnvironmentAccessible, @unchecked Sendable
     public nonisolated let configuration: Set<DeviceDiscoveryDescriptor>
 
     // sadly Swifts "lazy var" won't work here with strict concurrency as it doesn't isolate the underlying lazy storage
-    @SpeziBluetooth private var _lazy_discoveryConfiguration: Set<DiscoveryDescription>?
+    private var _lazy_discoveryConfiguration: Set<DiscoveryDescription>?
     // swiftlint:disable:previous discouraged_optional_collection identifier_name
-    @SpeziBluetooth private var discoveryConfiguration: Set<DiscoveryDescription> {
+    private var discoveryConfiguration: Set<DiscoveryDescription> {
         guard let discoveryConfiguration = _lazy_discoveryConfiguration else {
             let discovery = configuration.parseDiscoveryDescription()
             self._lazy_discoveryConfiguration = discovery
@@ -306,8 +306,10 @@ public final class Bluetooth: Module, EnvironmentAccessible, @unchecked Sendable
 
     /// Stores the connected device instance for every configured ``BluetoothDevice`` type.
     @Model @MainActor private var connectedDevicesModel = ConnectedDevicesModel()
+
+    // we need to manually declare the synthesized property wrapper to avoid https://github.com/swiftlang/swift/issues/76005#issuecomment-2466703851
     /// Injects the ``BluetoothDevice`` instances from the `ConnectedDevices` model into the SwiftUI environment.
-    @Modifier @MainActor private var devicesInjector: ConnectedDevicesEnvironmentModifier
+    @MainActor private var _devicesInjector: Modifier<ConnectedDevicesEnvironmentModifier>
 
 
     /// Configure the Bluetooth Module.
@@ -324,13 +326,12 @@ public final class Bluetooth: Module, EnvironmentAccessible, @unchecked Sendable
     /// - Parameter devices: The set of configured devices.
     @MainActor
     public init(
-        @DiscoveryDescriptorBuilder _ devices: @Sendable () -> Set<DeviceDiscoveryDescriptor>
+        @DiscoveryDescriptorBuilder _ devices: () -> Set<DeviceDiscoveryDescriptor>
     ) {
         let configuration = devices()
-        let deviceTypes = configuration.deviceTypes
 
         self.configuration = configuration
-        self.devicesInjector = ConnectedDevicesEnvironmentModifier(configuredDeviceTypes: deviceTypes)
+        self._devicesInjector = Modifier(wrappedValue: ConnectedDevicesEnvironmentModifier(from: configuration))
 
         Task { @SpeziBluetooth in
             self.observeDiscoveredDevices()

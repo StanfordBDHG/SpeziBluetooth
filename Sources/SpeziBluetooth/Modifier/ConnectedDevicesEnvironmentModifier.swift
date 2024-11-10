@@ -39,8 +39,12 @@ struct ConnectedDevicesEnvironmentModifier: ViewModifier {
     var connectedDevices
 
 
-    init(configuredDeviceTypes: [any BluetoothDevice.Type]) {
+    nonisolated init(configuredDeviceTypes: [any BluetoothDevice.Type]) {
         self.configuredDeviceTypes = configuredDeviceTypes
+    }
+
+    nonisolated init(from configuration: Set<DeviceDiscoveryDescriptor>) {
+        self.init(configuredDeviceTypes: configuration.deviceTypes)
     }
 
 

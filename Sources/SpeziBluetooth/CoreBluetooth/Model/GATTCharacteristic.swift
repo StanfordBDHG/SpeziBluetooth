@@ -125,8 +125,10 @@ public final class GATTCharacteristic {
         }
 
         if shouldNotifyCapture {
-            Task { @MainActor in
-                self.withMutation(keyPath: \.captured) {}
+            // self is never mutated or even accessed in the withMutation call
+            nonisolated(unsafe) let this = self
+            Task { @Sendable @MainActor in
+                this.withMutation(keyPath: \.captured) {}
             }
         }
     }
