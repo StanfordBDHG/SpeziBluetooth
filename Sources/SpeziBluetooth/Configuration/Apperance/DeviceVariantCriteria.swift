@@ -24,10 +24,6 @@ import SpeziViews
 ///
 /// ### Match against discovery information
 /// - ``matches(name:advertisementData:)``
-///
-/// ### Accessory Setup Kit
-/// - ``apply(to:)``
-/// - ``matches(descriptor:)``
 public struct DeviceVariantCriteria {
     let aspects: [DescriptorAspect]
 

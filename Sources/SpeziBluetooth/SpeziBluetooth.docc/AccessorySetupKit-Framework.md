@@ -42,3 +42,11 @@ Convert a SpeziBluetooth ``DiscoveryCriteria`` into its AccessorySetupKit `ASDis
 Convert a SpeziBluetooth ``ManufacturerIdentifier`` into its AccessorySetupKit `ASBluetoothCompanyIdentifier` representation.
 
 - ``ManufacturerIdentifier/bluetoothCompanyIdentifier``
+
+
+### Device Variant Criteria
+
+Apply a SpeziBluetooth ``DeviceVariantCriteria`` to a AccessorySetupKit `ASDiscoveryDescriptor`.
+
+- ``DeviceVariantCriteria/apply(to:)``
+- ``DeviceVariantCriteria/matches(descriptor:)``
