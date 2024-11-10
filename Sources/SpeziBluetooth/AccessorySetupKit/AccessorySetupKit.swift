@@ -376,7 +376,7 @@ extension AccessorySetupKit.AccessoryEvent: CustomStringConvertible, CustomDebug
 @available(macCatalyst, unavailable)
 extension AccessorySetupKit {
     /// A supported protocol of the accessory setup kit.
-    public struct SupportedProtocol {
+    public struct SupportedProtocol: RawRepresentable, Hashable, Sendable {
         /// The raw value identifier.
         public let rawValue: String
         
@@ -392,11 +392,6 @@ extension AccessorySetupKit {
         (Bundle.main.object(forInfoDictionaryKey: "NSAccessorySetupKitSupports") as? [String] ?? []).map { .init(rawValue: $0) }
     }
 }
-
-
-@available(iOS 18.0, *)
-@available(macCatalyst, unavailable)
-extension AccessorySetupKit.SupportedProtocol: Hashable, Sendable, RawRepresentable {}
 
 @available(iOS 18.0, *)
 @available(macCatalyst, unavailable)

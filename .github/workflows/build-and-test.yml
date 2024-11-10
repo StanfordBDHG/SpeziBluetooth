@@ -39,18 +39,9 @@ jobs:
     with:
       runsonlabels: '["macOS", "self-hosted"]'
       scheme: SpeziBluetooth-Package
-      destination: 'platform=watchOS Simulator,name=Apple Watch Series 9 (45mm)'
+      destination: 'platform=watchOS Simulator,name=Apple Watch Series 10 (46mm)'
       resultBundle: SpeziBluetooth-watchOS.xcresult
       artifactname: SpeziBluetooth-watchOS.xcresult
-  buildandtest_tvos:
-    name: Build and Test Swift Package tvOS
-    uses: StanfordSpezi/.github/.github/workflows/xcodebuild-or-fastlane.yml@v2
-    with:
-      runsonlabels: '["macOS", "self-hosted"]'
-      scheme: SpeziBluetooth-Package
-      destination: 'platform=tvOS Simulator,name=Apple TV 4K (3rd generation)'
-      resultBundle: SpeziBluetooth-tvOS.xcresult
-      artifactname: SpeziBluetooth-tvOS.xcresult
   ios:
     name: Build and Test iOS
     uses: StanfordSpezi/.github/.github/workflows/xcodebuild-or-fastlane.yml@v2
@@ -78,6 +69,6 @@ jobs:
     needs: [package_ios, buildandtest_visionos, buildandtest_watchos, buildandtest_tvos, ios, macos]
     uses: StanfordSpezi/.github/.github/workflows/create-and-upload-coverage-report.yml@v2
     with:
-      coveragereports: SpeziBluetooth-iOS.xcresult SpeziBluetooth-visionOS.xcresult SpeziBluetooth-watchOS.xcresult SpeziBluetooth-tvOS.xcresult TestApp-iOS.xcresult TestApp-macOS.xcresult
+      coveragereports: SpeziBluetooth-iOS.xcresult SpeziBluetooth-visionOS.xcresult SpeziBluetooth-watchOS.xcresult TestApp-iOS.xcresult TestApp-macOS.xcresult
     secrets:
       token: ${{ secrets.CODECOV_TOKEN }}
