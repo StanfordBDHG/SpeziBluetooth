@@ -22,6 +22,10 @@ public enum BluetoothError: Error, CustomStringConvertible, LocalizedError {
     /// Request is in progress.
     /// Request was sent to a control point characteristic while a different request is waiting for a response.
     case controlPointInProgress(service: BTUUID, characteristic: BTUUID)
+    /// Trying to interact with BluetoothManager while not being in the ``BluetoothState/poweredOn`` state.
+    ///
+    /// You cannot connect or disconnect peripherals if the underlying central manager is not powered on.
+    case invalidState(BluetoothState)
 
     
     /// Provides a human-readable description of the error.
@@ -39,6 +43,8 @@ public enum BluetoothError: Error, CustomStringConvertible, LocalizedError {
             String(localized: "Not Present", bundle: .module)
         case .controlPointRequiresNotifying, .controlPointInProgress:
             String(localized: "Control Point Error", bundle: .module)
+        case .invalidState:
+            String(localized: "Invalid State", bundle: .module)
         }
     }
 
@@ -53,6 +59,8 @@ public enum BluetoothError: Error, CustomStringConvertible, LocalizedError {
             String(localized: "Control point request was sent to \(characteristic.description) on \(service.description) but notifications weren't enabled for that characteristic.", bundle: .module)
         case let .controlPointInProgress(service, characteristic):
             String(localized: "Control point request was sent to \(characteristic.description) on \(service.description) while waiting for a response to a previous request.", bundle: .module)
+        case .invalidState:
+            String(localized: "Bluetooth must be powered on for this operation.", bundle: .module)
         }
     }
 }

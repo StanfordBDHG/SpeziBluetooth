@@ -23,6 +23,9 @@ struct ATTErrorCode: Error, Sendable {
 
 
 @MainActor
+@available(visionOS, unavailable)
+@available(watchOS, unavailable)
+@available(tvOS, unavailable)
 final class TestService: Sendable {
     private var logger: Logger {
         Logger(subsystem: "edu.stanford.spezi.bluetooth", category: "TestService")

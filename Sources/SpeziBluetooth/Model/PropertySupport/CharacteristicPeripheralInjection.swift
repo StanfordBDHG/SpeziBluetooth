@@ -322,7 +322,7 @@ extension CharacteristicPeripheralInjection where Value: ControlPointCharacteris
             
             throw error
         }
-        
+
         async let _ = withTimeout(of: timeout) {
             await transaction.signalTimeout()
         }

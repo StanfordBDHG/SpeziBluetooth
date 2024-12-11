@@ -8,6 +8,7 @@
 
 import CoreBluetooth
 import Foundation
+import SpeziFoundation
 
 
 struct CharacteristicAccessorCapture: Sendable {

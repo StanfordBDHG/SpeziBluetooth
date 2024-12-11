@@ -13,10 +13,13 @@
 ///
 /// - Important: The discovery criteria must be unique across all discovery configurations. Not doing so will result in undefined behavior.
 ///
+/// ```swift
+/// Discover(MyBluetoothDevice.self, by: .advertisedService(WeightScaleService.self))
+/// ```
+///
 /// ## Topics
 ///
 /// ### Discovering a device
-///
 /// - ``init(_:by:)``
 ///
 /// ### Semantic Model
@@ -25,7 +28,6 @@
 public struct Discover<Device: BluetoothDevice> {
     let deviceType: Device.Type
     let discoveryCriteria: DiscoveryCriteria
-
 
     /// Create a discovery for a given device type.
     /// - Parameters:

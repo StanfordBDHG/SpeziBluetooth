@@ -7,12 +7,12 @@
 //
 
 
-/// Building a set of ``Discover`` expressions to express what peripherals to discover.
+/// Building a set of `Discover` expressions to express what peripherals to discover.
 @resultBuilder
 public enum DiscoveryDescriptorBuilder {
     /// Build a ``Discover`` expression to define a ``DeviceDiscoveryDescriptor``.
     public static func buildExpression<Device: BluetoothDevice>(_ expression: Discover<Device>) -> Set<DeviceDiscoveryDescriptor> {
-        [DeviceDiscoveryDescriptor(discoveryCriteria: expression.discoveryCriteria, deviceType: Device.self)]
+        [DeviceDiscoveryDescriptor(from: expression)]
     }
 
     /// Build a block of ``DeviceDiscoveryDescriptor``s.

@@ -136,8 +136,8 @@ class ExampleDelegate: SpeziAppDelegate {
 Once you have the `Bluetooth` module configured within your Spezi app, you can access the module within your
 [`Environment`](https://developer.apple.com/documentation/swiftui/environment).
 
-You can use the ``SwiftUI/View/scanNearbyDevices(enabled:with:minimumRSSI:advertisementStaleInterval:autoConnect:)``
-and ``SwiftUI/View/autoConnect(enabled:with:minimumRSSI:advertisementStaleInterval:)``
+You can use the ``SwiftUICore/View/scanNearbyDevices(enabled:with:minimumRSSI:advertisementStaleInterval:autoConnect:)``
+and ``SwiftUICore/View/autoConnect(enabled:with:minimumRSSI:advertisementStaleInterval:)``
 modifiers to scan for nearby devices and/or auto connect to the first available device. Otherwise, you can also manually start and stop scanning for nearby devices
 using ``Bluetooth/scanNearbyDevices(minimumRSSI:advertisementStaleInterval:autoConnect:)`` and ``Bluetooth/stopScanning()``.
 
@@ -275,9 +275,9 @@ due to their async nature.
 
 ### Discovering nearby devices
 
-- ``SwiftUI/View/scanNearbyDevices(enabled:with:minimumRSSI:advertisementStaleInterval:autoConnect:)``
-- ``SwiftUI/View/autoConnect(enabled:with:minimumRSSI:advertisementStaleInterval:)``
-- ``SwiftUI/View/bluetoothScanningOptions(minimumRSSI:advertisementStaleInterval:)``
+- ``SwiftUICore/View/scanNearbyDevices(enabled:with:minimumRSSI:advertisementStaleInterval:autoConnect:)``
+- ``SwiftUICore/View/autoConnect(enabled:with:minimumRSSI:advertisementStaleInterval:)``
+- ``SwiftUICore/View/bluetoothScanningOptions(minimumRSSI:advertisementStaleInterval:)``
 - ``ConnectedDevices``
 
 ### Declaring a Bluetooth Device
@@ -293,23 +293,7 @@ due to their async nature.
 
 - ``SpeziBluetooth/SpeziBluetooth``
 
-### Core Bluetooth 
+### Frameworks
 
-- ``BluetoothManager``
-- ``BluetoothPeripheral``
-- ``GATTService``
-- ``GATTCharacteristic``
-- ``BluetoothState``
-- ``PeripheralState``
-- ``BluetoothError``
-- ``AdvertisementData``
-- ``ManufacturerIdentifier``
-- ``WriteType``
-- ``BTUUID``
-
-### Configuring Core Bluetooth
-
-- ``DiscoveryDescription``
-- ``DeviceDescription``
-- ``ServiceDescription``
-- ``CharacteristicDescription``
+- <doc:CoreBluetooth-Framework>
+- <doc:AccessorySetupKit-Framework>

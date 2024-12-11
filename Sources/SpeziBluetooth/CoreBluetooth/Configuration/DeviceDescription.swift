@@ -51,16 +51,18 @@ extension DeviceDescription: Hashable {}
 
 
 extension Collection where Element: Identifiable, Element.ID == DiscoveryCriteria {
-    func find(for advertisementData: AdvertisementData, logger: Logger) -> Element? {
+    func find(name: String?, advertisementData: AdvertisementData, logger: Logger) -> Element? {
         let configurations = filter { configuration in
-            configuration.id.matches(advertisementData)
+            configuration.id.matches(name: name, advertisementData: advertisementData)
         }
 
         if configurations.count > 1 {
-            let criteria = configurations
-                .map { $0.id.description }
-                .joined(separator: ", ")
-            logger.warning("Found ambiguous discovery configuration for peripheral. Peripheral matched all these criteria: \(criteria)")
+            logger.warning(
+                """
+                Found ambiguous discovery configuration for peripheral. Using for of all matched criteria: \
+                \(configurations.map { $0.id.description }.joined(separator: ", "))
+                """
+            )
         }
 
         return configurations.first

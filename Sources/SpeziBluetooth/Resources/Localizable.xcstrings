@@ -1,6 +1,66 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Access was restricted by the user." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Access was restricted by the user."
+          }
+        }
+      }
+    },
+    "Activation Failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activation Failed"
+          }
+        }
+      }
+    },
+    "Bluetooth must be powered on for this operation." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth must be powered on for this operation."
+          }
+        }
+      }
+    },
+    "Busy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Busy"
+          }
+        }
+      }
+    },
+    "Cancelled" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelled"
+          }
+        }
+      }
+    },
+    "Connection Failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection Failed"
+          }
+        }
+      }
+    },
     "Control Point Error" : {
       "localizations" : {
         "en" : {
@@ -51,6 +111,76 @@
         }
       }
     },
+    "Discovery session timed out." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discovery session timed out."
+          }
+        }
+      }
+    },
+    "Discovery Timeout" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discovery Timeout"
+          }
+        }
+      }
+    },
+    "Extension Not Found" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extension Not Found"
+          }
+        }
+      }
+    },
+    "Invalid Request" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid Request"
+          }
+        }
+      }
+    },
+    "Invalid State" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid State"
+          }
+        }
+      }
+    },
+    "Invalidate was called before the operation completed normally." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalidate was called before the operation completed normally."
+          }
+        }
+      }
+    },
+    "Invalidated" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalidated"
+          }
+        }
+      }
+    },
     "Not Present" : {
       "localizations" : {
         "en" : {
@@ -61,12 +191,132 @@
         }
       }
     },
+    "Operation completed successfully." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Operation completed successfully."
+          }
+        }
+      }
+    },
+    "Received an invalid request." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Received an invalid request."
+          }
+        }
+      }
+    },
+    "Restricted" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restricted"
+          }
+        }
+      }
+    },
+    "Success" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Success"
+          }
+        }
+      }
+    },
+    "The picker is already active." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The picker is already active."
+          }
+        }
+      }
+    },
+    "The picker is restricted due to the application being in the background." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The picker is restricted due to the application being in the background."
+          }
+        }
+      }
+    },
     "The requested characteristic %@ on %@ was not present on the device." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "The requested characteristic %1$@ on %2$@ was not present on the device."
+          }
+        }
+      }
+    },
+    "The user cancelled the discovery." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The user cancelled the discovery."
+          }
+        }
+      }
+    },
+    "Unable to activate discovery session." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to activate discovery session."
+          }
+        }
+      }
+    },
+    "Unable to establish connection with the accessory." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to establish connection with the accessory."
+          }
+        }
+      }
+    },
+    "Unable to locate the App Extension." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to locate the App Extension."
+          }
+        }
+      }
+    },
+    "Unknown" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown"
+          }
+        }
+      }
+    },
+    "Unknown error occurred." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown error occurred."
           }
         }
       }

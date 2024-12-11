@@ -2,9 +2,9 @@
 
 //
 // This source file is part of the Stanford Spezi open source project
-// 
+//
 // SPDX-FileCopyrightText: 2022 Stanford University and the project authors (see CONTRIBUTORS.md)
-// 
+//
 // SPDX-License-Identifier: MIT
 //
 
@@ -18,16 +18,20 @@ let package = Package(
     platforms: [
         .iOS(.v17),
         .macCatalyst(.v17),
-        .macOS(.v14)
+        .macOS(.v14),
+        .visionOS(.v1),
+        .watchOS(.v10),
+        .tvOS(.v17)
     ],
     products: [
         .library(name: "SpeziBluetoothServices", targets: ["SpeziBluetoothServices"]),
         .library(name: "SpeziBluetooth", targets: ["SpeziBluetooth"])
     ],
     dependencies: [
-        .package(url: "https://github.com/StanfordSpezi/SpeziFoundation", from: "2.0.0-beta.1"),
-        .package(url: "https://github.com/StanfordSpezi/Spezi", from: "1.7.1"),
-        .package(url: "https://github.com/StanfordSpezi/SpeziNetworking", from: "2.1.0"),
+        .package(url: "https://github.com/StanfordSpezi/SpeziFoundation.git", from: "2.0.0"),
+        .package(url: "https://github.com/StanfordSpezi/Spezi.git", from: "1.8.0"),
+        .package(url: "https://github.com/StanfordSpezi/SpeziViews.git", from: "1.7.0"),
+        .package(url: "https://github.com/StanfordSpezi/SpeziNetworking.git", from: "2.1.0"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.59.0"),
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.0.4"),
         .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
@@ -38,6 +42,7 @@ let package = Package(
             name: "SpeziBluetooth",
             dependencies: [
                 .product(name: "Spezi", package: "Spezi"),
+                .product(name: "SpeziViews", package: "SpeziViews"),
                 .product(name: "NIO", package: "swift-nio"),
                 .product(name: "OrderedCollections", package: "swift-collections"),
                 .product(name: "SpeziFoundation", package: "SpeziFoundation"),

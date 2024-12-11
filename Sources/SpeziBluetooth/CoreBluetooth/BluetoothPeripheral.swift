@@ -35,7 +35,7 @@ import SpeziFoundation
 ///
 /// ### Managing Connection
 /// - ``connect()``
-/// - ``disconnect()``
+/// - ``disconnect()-1nrzk``
 ///
 /// ### Reading a value
 /// - ``read(characteristic:)``
@@ -67,17 +67,19 @@ public class BluetoothPeripheral { // swiftlint:disable:this type_body_length
     /// Observable state container for local state.
     private let storage: PeripheralStorage
 
-    /// Manage asynchronous accesses for an ongoing connection attempt.
+    /// Managed asynchronous accesses for an ongoing connection attempt.
     private let connectAccess = ManagedAsynchronousAccess<Void, Error>()
+    /// Managed asynchronous accesses for an ongoing disconnect attempt.
+    private let disconnectAccess = ManagedAsynchronousAccess<Void, Never>()
     /// Manage asynchronous accesses per characteristic.
     private let characteristicAccesses = CharacteristicAccesses()
-    /// Manage asynchronous accesses for an ongoing writhe without response.
+    /// Managed asynchronous accesses for an ongoing writhe without response.
     private let writeWithoutResponseAccess = ManagedAsynchronousAccess<Void, Never>()
-    /// Manage asynchronous accesses for the rssi read action.
+    /// Managed asynchronous accesses for the rssi read action.
     private let rssiAccess = ManagedAsynchronousAccess<Int, Error>()
-    /// Manage asynchronous accesses for service discovery.
+    /// Managed asynchronous accesses for service discovery.
     private let discoverServicesAccess = ManagedAsynchronousAccess<[BTUUID], Error>()
-    /// Manage asynchronous accesses for characteristic discovery of a given service.
+    /// Managed asynchronous accesses for characteristic discovery of a given service.
     private var discoverCharacteristicAccesses: [BTUUID: ManagedAsynchronousAccess<Void, Error>] = [:]
 
     /// On-change handler registrations for all characteristics.
@@ -191,14 +193,19 @@ public class BluetoothPeripheral { // swiftlint:disable:this type_body_length
             return
         }
 
+        guard manager.state == .poweredOn else {
+            // CoreBluetooth only prints a "API MISUSE" log warning if one attempts to connect while not being poweredOn
+            throw BluetoothError.invalidState(manager.state)
+        }
+
         try await withTaskCancellationHandler {
             try await connectAccess.perform {
                 manager.connect(peripheral: self)
             }
         } onCancel: {
             Task { @SpeziBluetooth in
-                if connectAccess.isRunning {
-                    disconnect()
+                if connectAccess.ongoingAccess {
+                    await disconnect()
                 }
             }
         }
@@ -207,7 +214,18 @@ public class BluetoothPeripheral { // swiftlint:disable:this type_body_length
     /// Disconnect the ongoing connection to the peripheral.
     ///
     /// Cancels an active or pending connection to a peripheral.
+    @available(*, deprecated, message: "Please migrate to the async version of disconnect().")
+    @_documentation(visibility: internal)
     public func disconnect() {
+        Task {
+            await disconnect()
+        }
+    }
+    
+    /// Disconnect the ongoing connection to the peripheral.
+    ///
+    /// Cancels an active or pending connection to a peripheral.
+    public func disconnect() async {
         guard let manager else {
             logger.warning("Tried to disconnect an orphaned bluetooth peripheral!")
             return
@@ -215,9 +233,25 @@ public class BluetoothPeripheral { // swiftlint:disable:this type_body_length
 
         removeAllNotifications()
 
-        manager.disconnect(peripheral: self)
-        // ensure that it is updated instantly.
-        storage.update(state: PeripheralState(from: cbPeripheral.state))
+        guard case .poweredOn = manager.state else {
+            // CoreBluetooth only prints a "API MISUSE" log warning if one attempts to connect while not being poweredOn
+            return
+        }
+
+        if case .disconnected = state {
+            manager.disconnect(peripheral: self) // just be save and call it anyways
+            return // the delegate will not be called if already disconnected
+        }
+
+        do {
+            try await disconnectAccess.perform {
+                manager.disconnect(peripheral: self)
+                // ensure that it is updated instantly.
+                storage.update(state: PeripheralState(from: cbPeripheral.state))
+            }
+        } catch {
+            // "perform" just throws because of cancellation
+        }
     }
 
     /// Retrieve a service.
@@ -275,7 +309,7 @@ public class BluetoothPeripheral { // swiftlint:disable:this type_body_length
         } catch {
             logger.error("Failed to discover initial services: \(error)")
             connectAccess.resume(throwing: error)
-            disconnect()
+            await disconnect()
             return
         }
 
@@ -421,6 +455,8 @@ public class BluetoothPeripheral { // swiftlint:disable:this type_body_length
         if let serviceIds = storage.services?.keys {
             self.invalidateServices(Set(serviceIds))
         }
+
+        disconnectAccess.resume() // the error describes the disconnect reason, but the disconnect itself cannot throw
 
         connectAccess.cancelAll(error: error)
         writeWithoutResponseAccess.cancelAll()
@@ -842,7 +878,7 @@ extension BluetoothPeripheral {
 
             let name = peripheral.name
 
-            Task { @SpeziBluetooth in
+            SpeziBluetooth.assumeIsolatedIfAvailableOrTask {
                 device.storage.peripheralName = name
             }
         }
@@ -852,7 +888,7 @@ extension BluetoothPeripheral {
                 return
             }
 
-            Task { @SpeziBluetooth in
+            SpeziBluetooth.assumeIsolatedIfAvailableOrTask {
                 let rssi = RSSI.intValue
                 device.storage.rssi = rssi
 
@@ -878,7 +914,7 @@ extension BluetoothPeripheral {
             logger.debug("Services modified, invalidating \(serviceIds)")
 
             let peripheral = CBInstance(instantiatedOnDispatchQueue: peripheral)
-            Task { @SpeziBluetooth in
+            SpeziBluetooth.assumeIsolatedIfAvailableOrTask {
                 // update our local model!
                 device.invalidateServices(Set(serviceIds))
 
@@ -906,7 +942,7 @@ extension BluetoothPeripheral {
                 result = .success([])
             }
 
-            Task { @SpeziBluetooth in
+            SpeziBluetooth.assumeIsolatedIfAvailableOrTask {
                 if let cbServices {
                     device.discovered(services: cbServices.cbObject)
                 }
@@ -934,7 +970,7 @@ extension BluetoothPeripheral {
             }
 
             let service = CBInstance(instantiatedOnDispatchQueue: service)
-            Task { @SpeziBluetooth in
+            SpeziBluetooth.assumeIsolatedIfAvailableOrTask {
                 // update our model with latest characteristics!
                 device.synchronizeModel(for: service.cbObject)
 
@@ -962,7 +998,7 @@ extension BluetoothPeripheral {
             let capture = GATTCharacteristicCapture(from: characteristic)
             let characteristic = CBInstance(instantiatedOnDispatchQueue: characteristic)
 
-            Task { @SpeziBluetooth in
+            SpeziBluetooth.assumeIsolatedIfAvailableOrTask {
                 device.synchronizeModel(for: characteristic.cbObject, capture: capture)
             }
         }
@@ -975,7 +1011,7 @@ extension BluetoothPeripheral {
             let capture = GATTCharacteristicCapture(from: characteristic)
             let characteristic = CBInstance(instantiatedOnDispatchQueue: characteristic)
 
-            Task { @SpeziBluetooth [logger] in
+            SpeziBluetooth.assumeIsolatedIfAvailableOrTask { [logger] in
                 // make sure value is propagated beforehand
                 device.synchronizeModel(for: characteristic.cbObject, capture: capture)
 
@@ -996,7 +1032,7 @@ extension BluetoothPeripheral {
             let capture = GATTCharacteristicCapture(from: characteristic)
             let characteristic = CBInstance(instantiatedOnDispatchQueue: characteristic)
 
-            Task { @SpeziBluetooth [logger] in
+            SpeziBluetooth.assumeIsolatedIfAvailableOrTask { [logger] in
                 device.synchronizeModel(for: characteristic.cbObject, capture: capture)
 
                 let result: Result<Void, Error>
@@ -1020,7 +1056,7 @@ extension BluetoothPeripheral {
                 return
             }
 
-            Task { @SpeziBluetooth in
+            SpeziBluetooth.assumeIsolatedIfAvailableOrTask {
                 device.writeWithoutResponseAccess.resume()
             }
         }
@@ -1042,7 +1078,7 @@ extension BluetoothPeripheral {
             let capture = GATTCharacteristicCapture(from: characteristic)
             let characteristic = CBInstance(instantiatedOnDispatchQueue: characteristic)
 
-            Task { @SpeziBluetooth [logger] in
+            SpeziBluetooth.assumeIsolatedIfAvailableOrTask { [logger] in
                 device.synchronizeModel(for: characteristic.cbObject, capture: capture)
 
                 if error == nil {

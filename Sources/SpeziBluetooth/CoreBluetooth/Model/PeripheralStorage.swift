@@ -8,6 +8,7 @@
 
 import Atomics
 import Foundation
+import SpeziFoundation
 
 
 /// A dedicated, observable storage container for a ``BluetoothPeripheral``.
@@ -167,11 +168,12 @@ final class PeripheralStorage: ValueObservable, Sendable {
     @SpeziBluetooth
     func update(state: PeripheralState) {
         let current = self.state
-        if current != state {
-            // we set connected on our own! See `signalFullyDiscovered`
-            if !(current == .connecting && state == .connected) {
-                self.state = state
-            }
+        switch (current, state) {
+        case (.connecting, .connected):
+            // we set the connected state transition on our own! See `signalFullyDiscovered`
+            break
+        default:
+            self.state = state
         }
 
         if current == .connecting || current == .connected {
